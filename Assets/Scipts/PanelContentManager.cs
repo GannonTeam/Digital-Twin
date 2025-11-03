@@ -3,12 +3,12 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 
 /// <summary>
-/// Manages a collection of content panels. When a new index is received (typically from a Dropdown),
-/// it hides all panels and shows only the panel corresponding to the index.
+/// Manages a collection of content panels. When a new index or name is received,
+/// it hides all panels and shows only the panel corresponding to the request.
 /// </summary>
 public class PanelContentManager : MonoBehaviour
 {
-    [Tooltip("Drag all content panels (Log, Dashboard, etc.) into this list, in the order they appear in the Dropdown.")]
+    [Tooltip("Drag all content panels (e.g., ChatPanel, DashboardContentPanel) into this list. The order corresponds to Dropdown indices.")]
     public List<GameObject> contentPanels = new List<GameObject>();
 
     [Tooltip("Check this box to output console messages when the panel view changes.")]
@@ -17,10 +17,17 @@ public class PanelContentManager : MonoBehaviour
     private void Start()
     {
         // Ensure all panels are disabled at the start of the scene.
-        // The ShowPanel() function will be called immediately by the Dropdown's default value (0)
-        // once the scene loads and the UI is initialized.
         HideAllPanels();
-        ShowPanel(0);
+        
+        // Show the default panel (Index 0).
+        if (contentPanels.Count > 0)
+        {
+            ShowPanel(0);
+        }
+        else
+        {
+            Debug.LogWarning("PanelContentManager: contentPanels list is empty. No panels to show on Start.");
+        }
     }
 
     /// <summary>
@@ -38,9 +45,10 @@ public class PanelContentManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Public function called by the Dropdown's "On Value Changed (Int)" event.
+    /// Public function called by a Dropdown's "On Value Changed (Int)" event.
+    /// Switches content panel based on its index in the list.
     /// </summary>
-    /// <param name="panelIndex">The index of the selected item in the dropdown (0 = Log, 1 = Dashboard, etc.).</param>
+    /// <param name="panelIndex">The index of the selected item (e.g., 0 for ChatPanel, 1 for DashboardContentPanel).</param>
     public void ShowPanel(int panelIndex)
     {
         // 1. Check for valid index before proceeding.
@@ -67,7 +75,28 @@ public class PanelContentManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"Panel Manager Error: Panel at index {panelIndex} is null/missing in the list!");
+            Debug.LogError($"Panel Manager Error: Panel at index {panelIndex} is null/missing in the list! Check the contentPanels assignment.");
+        }
+    }
+    
+    /// <summary>
+    /// Public function called by a UI Button or script logic to switch content by panel name.
+    /// This is the required method for the new 'Open Chat' button functionality.
+    /// </summary>
+    /// <param name="panelName">The exact name of the GameObject panel to show (e.g., "ChatPanel").</param>
+    public void ShowPanelByName(string panelName)
+    {
+        // Finds the index of the GameObject with the matching name.
+        int panelIndex = contentPanels.FindIndex(panel => panel != null && panel.name == panelName);
+
+        if (panelIndex != -1)
+        {
+            // Use the index to call the core panel switching logic.
+            ShowPanel(panelIndex);
+        }
+        else
+        {
+            Debug.LogError($"Panel Manager Error: Panel named '{panelName}' not found in the contentPanels list. Check spelling and list contents.");
         }
     }
 }

@@ -1,47 +1,48 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
+using System.Collections;
+using System;
+using TMPro; // Required for TMP_Dropdown
 
 /// <summary>
-/// Controls the camera viewport size and the activation of a corresponding UI element
-/// based on the selected DisplayMode (General Panel or Chat Canvas).
+/// Handles the visibility of the main UI dashboard panel (uiPanel) when the linked 
+/// object (e.g., a 3D printer) is clicked, and provides explicit Open/Close methods.
 /// </summary>
 public class ViewportController : MonoBehaviour
 {
-    // === STATIC TRACKING ===
-    public static ViewportController CurrentActiveController { get; private set; }
-
-    /// <summary>
-    /// Defines which UI element this specific controller instance should manage.
-    /// </summary>
-    public enum DisplayMode {
-        GeneralPanel, // Uses the 'uiPanel' reference (e.g., Log/Dashboard)
-        ChatCanvas    // Uses the 'chatCanvas' reference (e.g., Convai Chat)
-    }
-
-    [Header("Configuration")]
-    [SerializeField]
-    private DisplayMode displayMode = DisplayMode.GeneralPanel;
-
-    [Header("Input and UI References")]
-    [SerializeField]
-    private InputActionReference clickAction; 
-
+    [Header("UI References")]
+    [Tooltip("The root GameObject of the entire dashboard panel to be shown/hidden.")]
     [SerializeField]
     private GameObject uiPanel; 
 
+    [Tooltip("The PanelContentManager instance on the dashboard root.")]
     [SerializeField]
-    private GameObject chatCanvas; 
+    private PanelContentManager contentManager;
     
-    // NEW: Cache the ChatManager component if this controller opens the chat.
-    private ChatManager cachedChatManager;
+    [Tooltip("The Dropdown component that displays the current active panel.")]
+    [SerializeField]
+    private TMP_Dropdown panelDropdown;
+    
+    // Default Panel settings
+    [Header("Default View Configuration")]
+    [Tooltip("The exact GameObject name of the Dashboard Panel (default view when clicking printer).")]
+    [SerializeField]
+    private string dashboardPanelName = "DashboardContentPanel";
+    
+    [Tooltip("The index in the Dropdown that corresponds to the Dashboard Panel (e.g., 1).")]
+    [SerializeField]
+    private int dashboardPanelIndex = 1;
+    
+    private Canvas rootCanvas;
 
+    [Header("Input")]
+    [Tooltip("The input action used to detect clicks on the linked object.")]
+    [SerializeField]
+    private InputActionReference clickAction; 
+    
     // --- Private State ---
     private Camera mainCamera;
-    private bool isViewShrunk = false;
-
-    // --- Viewport Constants ---
-    private static readonly Rect FullViewRect = new Rect(0f, 0f, 1f, 1f); 
-    private static readonly Rect ShrunkViewRect = new Rect(0f, 0f, 0.6f, 1f); 
 
     private void Awake()
     {
@@ -57,11 +58,6 @@ public class ViewportController : MonoBehaviour
         {
             clickAction.action.performed -= OnClickPerformed;
         }
-        
-        if (CurrentActiveController == this)
-        {
-            CurrentActiveController = null;
-        }
     }
 
     private void Start()
@@ -73,25 +69,17 @@ public class ViewportController : MonoBehaviour
 
         if (mainCamera == null)
         {
-            Debug.LogError("ViewportController Error: Main Camera (with 'MainCamera' tag) not found or missing Camera component.");
+            Debug.LogError("ViewportController Error: Main Camera not found or missing Camera component.");
             enabled = false;
         }
         
-        // --- RELOCATED CACHING LOGIC ---
-        // Cache the ChatManager reference here, which runs after all Awake() calls.
-        if (displayMode == DisplayMode.ChatCanvas && chatCanvas != null)
+        rootCanvas = uiPanel?.GetComponentInParent<Canvas>();
+        if (rootCanvas == null)
         {
-            // Use GetComponentInChildren for flexibility, allowing ChatManager to be on the parent or a child panel.
-            cachedChatManager = chatCanvas.GetComponentInChildren<ChatManager>(true);
-            if (cachedChatManager == null)
-            {
-                Debug.LogError("ViewportController Error: ChatManager component not found on the assigned Chat Canvas object or its children.");
-            }
+            Debug.LogError("ViewportController Error: Could not find root Canvas for UI Panel.");
         }
-        // --- END RELOCATED CACHING LOGIC ---
 
-        // Use the CloseViewportView(true) override to ensure initial state is full view and panels are hidden.
-        CloseViewportView(true); 
+        ClosePanel(true); 
 
         if (clickAction?.action != null)
         {
@@ -109,90 +97,121 @@ public class ViewportController : MonoBehaviour
         {
             if (hit.collider.gameObject == gameObject)
             {
-                // Check if this controller is already active for toggling.
-                if (CurrentActiveController == this && isViewShrunk)
-                {
-                    CloseViewportView();
-                }
-                else
-                {
-                    OpenViewportView();
-                }
+                // Clicking the printer model always opens the default Dashboard view
+                OpenPanelToDashboard();
             }
         }
     }
 
     /// <summary>
-    /// Public function to explicitly open the view (shrink camera, show panel).
+    /// Opens the main panel and sets the view to the Dashboard by default.
+    /// This is called when the 3D printer model is clicked.
     /// </summary>
-    public void OpenViewportView()
+    public void OpenPanelToDashboard()
     {
-        if (mainCamera == null) return; 
+        if (uiPanel != null)
+        {
+            uiPanel.SetActive(true);
 
-        // 1. If another controller is currently open, close it first.
-        if (CurrentActiveController != null && CurrentActiveController != this)
-        {
-            // Use CloseViewportView(false) to prevent restoring camera twice.
-            CurrentActiveController.CloseViewportView(false); 
-        }
-        
-        // 2. Set THIS instance as the currently active controller.
-        CurrentActiveController = this;
-        
-        // 3. Shrink the view.
-        isViewShrunk = true;
-        mainCamera.rect = ShrunkViewRect;
-
-        // 4. Activate the correct panel and hide the other
-        if (displayMode == DisplayMode.GeneralPanel)
-        {
-            uiPanel?.SetActive(true);
-            chatCanvas?.SetActive(false);
-        }
-        else // DisplayMode.ChatCanvas
-        {
-            uiPanel?.SetActive(false);
-            chatCanvas?.SetActive(true);
-            
-            // CALL CHAT INITIALIZATION
-            cachedChatManager?.InitializeChat(); 
-        }
-    }
-    
-    /// <summary>
-    /// Public function to explicitly close the view (restore camera, hide panel).
-    /// </summary>
-    /// <param name="forceClose">If true, forces the camera to restore to FullViewRect (used in Start).</param>
-    public void CloseViewportView(bool forceClose = false)
-    {
-        if (mainCamera == null) return;
-
-        // Only proceed if this controller owns the view OR we are forcing a close
-        if (isViewShrunk || forceClose)
-        {
-            isViewShrunk = false;
-            
-            // Restore the view and hide BOTH potential panels.
-            mainCamera.rect = FullViewRect;
-            uiPanel?.SetActive(false);
-            chatCanvas?.SetActive(false);
-            
-            // Clear the static reference, since the view is now closed.
-            if (CurrentActiveController == this)
+            // Force layout update aggressively
+            if (rootCanvas != null)
             {
-                CurrentActiveController = null;
+                Canvas.ForceUpdateCanvases();
             }
+
+            RectTransform panelRect = uiPanel.GetComponent<RectTransform>();
+            if (panelRect != null)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(panelRect);
+            }
+            
+            // 1. Set dropdown value to Dashboard index
+            if (panelDropdown != null)
+            {
+                panelDropdown.value = dashboardPanelIndex;
+            }
+
+            // 2. Switch content to Dashboard
+            if (contentManager != null)
+            {
+                contentManager.ShowPanelByName(dashboardPanelName);
+            }
+
+            Debug.Log("ViewportController: Panel opened and set to Dashboard.");
+        }
+        else
+        {
+            Debug.LogError("ViewportController Error: uiPanel reference is missing!");
         }
     }
     
     /// <summary>
-    /// STATIC method called by the UI Close Button. 
+    /// Public function to explicitly open the view and show the panel.
+    /// Used for delayed switching by the OpenChatButtonHandler.
     /// </summary>
-    public static void StaticClose()
+    public void OpenPanel()
     {
-        if (CurrentActiveController != null)
+        if (uiPanel != null)
         {
-            CurrentActiveController.CloseViewportView();
+            // Simply activate the panel without changing content, as content is handled
+            // by the ChatButtonHandler's delayed switch logic.
+            uiPanel.SetActive(true);
+            
+            // Force layout update aggressively (still necessary for the delay logic to work)
+            if (rootCanvas != null)
+            {
+                Canvas.ForceUpdateCanvases();
+            }
+
+            RectTransform panelRect = uiPanel.GetComponent<RectTransform>();
+            if (panelRect != null)
+            {
+                LayoutRebuilder.ForceRebuildLayoutImmediate(panelRect);
+            }
+
+            Debug.Log("ViewportController: Panel activated (content switch pending).");
+        }
+        else
+        {
+            Debug.LogError("ViewportController Error: uiPanel reference is missing!");
+        }
+    }
+
+    /// <summary>
+    /// Public function that initiates a delayed opening and content switch.
+    /// This is the method the OpenChatButtonHandler should use.
+    /// </summary>
+    /// <param name="callback">Action to execute one frame after the panel is opened.</param>
+    public void StartDelayedContentSwitch(Action callback)
+    {
+        // 1. Ensure the panel is open (calling OpenPanel performs the layout rebuilds)
+        OpenPanel();
+        
+        // 2. Start the coroutine to perform the content switch one frame later
+        StartCoroutine(PerformDelayedAction(callback));
+    }
+
+    /// <summary>
+    /// Coroutine that yields one frame before executing the provided action.
+    /// </summary>
+    private IEnumerator PerformDelayedAction(Action action)
+    {
+        yield return null; 
+        action?.Invoke();
+    }
+    
+    /// <summary>
+    /// Public function to explicitly close the view and hide the panel.
+    /// </summary>
+    public void ClosePanel(bool forceClose = false)
+    {
+        if (uiPanel != null && (uiPanel.activeSelf || forceClose))
+        {
+            uiPanel.SetActive(false);
+            if (!forceClose) 
+            {
+                Debug.Log("ViewportController: Panel closed.");
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.InputSystem; 
+using System; 
 
 /// <summary>
 /// Data structure to hold information for a single chat message.
@@ -44,9 +45,12 @@ public class ChatManager : MonoBehaviour
     private ConvaiTextService convaiService;
     // ---------------------------------------------
     
-    // FINAL FIX: Field to store the last bot message to prevent immediate duplicates
+    // Field to store the last bot message to prevent immediate duplicates
     private string _lastBotMessageDisplayed = ""; 
-    // --------------------------------------------------------------------------
+    
+    // NEW ROBUST FIX: Cooldown timer to prevent processing duplicate responses.
+    private float lastResponseTime = 0f;
+    private const float RESPONSE_COOLDOWN = 0.5f; // Ignore any response within 0.5s of the last valid one.
 
     private List<ChatMessage> messageHistory = new List<ChatMessage>();
     private bool isChatInitialized = false; 
@@ -67,6 +71,22 @@ public class ChatManager : MonoBehaviour
         {
             Debug.LogError("ChatManager Fatal Error: ConvaiTextService not found in the scene.");
         }
+        
+        // Subscribe to the Convai service ONLY once during the component's lifetime (Awake).
+        if (convaiService != null)
+        {
+            convaiService.OnTextResponseReceived -= OnConvaiResponseReceived; // Defensive Unsubscribe
+            convaiService.OnTextResponseReceived += OnConvaiResponseReceived; // Single Subscription
+        }
+    }
+    
+    private void OnDestroy()
+    {
+        // Unsubscribe to prevent memory leaks when the component is destroyed.
+        if (convaiService != null)
+        {
+            convaiService.OnTextResponseReceived -= OnConvaiResponseReceived;
+        }
     }
 
     private void OnEnable()
@@ -76,13 +96,9 @@ public class ChatManager : MonoBehaviour
             sendInputMessageAction.performed += OnSendInputPerformed;
             sendInputMessageAction.Enable();
         }
-
-        // FIX: Defensive Subscription to prevent duplicate event firing.
-        if (convaiService != null)
-        {
-            convaiService.OnTextResponseReceived -= OnConvaiResponseReceived; // Unsubscribe defensively
-            convaiService.OnTextResponseReceived += OnConvaiResponseReceived; // Subscribe
-        } 
+        
+        // Initialize chat here. This ensures the welcome message is created the first time the panel is enabled.
+        InitializeChat();
     }
 
     private void OnDisable()
@@ -92,17 +108,12 @@ public class ChatManager : MonoBehaviour
             sendInputMessageAction.performed -= OnSendInputPerformed;
             sendInputMessageAction.Disable();
         }
-
-        // Clean Unsubscribe
-        if (convaiService != null)
-        {
-            convaiService.OnTextResponseReceived -= OnConvaiResponseReceived;
-        }
     }
 
     private void OnSendInputPerformed(InputAction.CallbackContext context)
     {
-        if (!string.IsNullOrWhiteSpace(inputField.text))
+        // Only handle the message if the input field is currently selected/focused
+        if (inputField != null && inputField.isFocused && !string.IsNullOrWhiteSpace(inputField.text))
         {
             HandleUserMessage();
         }
@@ -122,8 +133,8 @@ public class ChatManager : MonoBehaviour
     {
         if (isChatInitialized) return; 
 
+        isChatInitialized = true; // Set flag immediately to prevent duplication/race conditions
         DisplayMessage("Welcome to the Convai Assistant Chat!", MessageSource.Bot);
-        isChatInitialized = true;
     }
 
     /// <summary>
@@ -133,7 +144,7 @@ public class ChatManager : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(messageContent)) return;
         
-        // --- FINAL FIX: DEDUPLICATION CHECK ---
+        // --- DEDUPLICATION CHECK ---
         if (source == MessageSource.Bot)
         {
             // Check if the exact same message was just displayed by the bot.
@@ -196,9 +207,11 @@ public class ChatManager : MonoBehaviour
         // 6. Force UI rebuild and Auto-scroll
         if (contentPanel != null)
         {
+            // Force layout rebuild before scrolling
             LayoutRebuilder.ForceRebuildLayoutImmediate(contentPanel.GetComponent<RectTransform>());
         }
         
+        // Autoscroll (using manual vertical position set, which is reliable after a forced rebuild)
         if (scrollView != null)
         {
             scrollView.verticalNormalizedPosition = 0f;
@@ -233,6 +246,16 @@ public class ChatManager : MonoBehaviour
 
     private void OnConvaiResponseReceived(string responseText, bool isError)
     {
+        // NEW FIX: Check the cooldown timer. If we just processed a response, ignore this one.
+        if (Time.time < lastResponseTime + RESPONSE_COOLDOWN)
+        {
+            Debug.LogWarning("ChatManager: Blocking duplicate/fast response due to cooldown.");
+            return;
+        }
+
+        // Record the time of the valid response
+        lastResponseTime = Time.time;
+
         DisplayMessage(responseText, MessageSource.Bot);
         
         inputField.interactable = true;
