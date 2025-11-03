@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3402f41fb2bc77540b1edc3e8db81bce, type: 3}
   m_Name: ConvaiAPIKey
   m_EditorClassIdentifier: Assembly-CSharp::ConvaiAPIKeySetup
-  APIKey: cd2dfdd3fcf96c703464aacfec3b08e3
+  APIKey: bde1351090ed5ef458b225b6cc5142c1
