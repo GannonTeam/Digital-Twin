@@ -35,26 +35,28 @@ public class ChatManager : MonoBehaviour
     public GameObject messageTextPrefab;      
     public TMP_InputField inputField;           
     public ScrollRect scrollView;
+    
+    // --- New Reference ---
+    [Header("Chat Focus Logic")]
+    [Tooltip("Drag the ChatFocusHandler script (on the Chat Panel root) here.")]
+    [SerializeField]
+    private ChatFocusHandler chatFocusHandler;
+    // --- End New Reference ---
 
     [Header("Configuration")]
     public Color UserColor = new Color32(50, 200, 255, 255); 
     public Color BotColor = Color.white;
     public int MaxMessages = 25;
 
-    // --- CONVAI INTEGRATION: Private Reference ---
-    private ConvaiTextService convaiService;
-    // ---------------------------------------------
-    
-    // Field to store the last bot message to prevent immediate duplicates
+    // --- MISSING PRIVATE FIELD DECLARATIONS (FIXED) ---
+    private ConvaiTextService convaiService; 
     private string _lastBotMessageDisplayed = ""; 
-    
-    // NEW ROBUST FIX: Cooldown timer to prevent processing duplicate responses.
     private float lastResponseTime = 0f;
-    private const float RESPONSE_COOLDOWN = 0.5f; // Ignore any response within 0.5s of the last valid one.
-
+    private const float RESPONSE_COOLDOWN = 0.5f; 
     private List<ChatMessage> messageHistory = new List<ChatMessage>();
     private bool isChatInitialized = false; 
     private InputAction sendInputMessageAction; 
+    // ----------------------------------------------------
 
     // --- Input System Setup ---
 
@@ -97,8 +99,22 @@ public class ChatManager : MonoBehaviour
             sendInputMessageAction.Enable();
         }
         
-        // Initialize chat here. This ensures the welcome message is created the first time the panel is enabled.
+        // Initialize chat here.
         InitializeChat();
+        
+        // NEW LOGIC: On Chat Panel enable, automatically lock movement and focus chat.
+        if (chatFocusHandler != null)
+        {
+            chatFocusHandler.SetChatActiveState(true);
+            
+            // Subscribe to the input field's selection event to re-lock movement 
+            inputField.onSelect.RemoveListener(OnInputFieldSelect); 
+            inputField.onSelect.AddListener(OnInputFieldSelect);
+        }
+        else
+        {
+            Debug.LogError("ChatManager: ChatFocusHandler reference is missing. Movement interaction will not work.");
+        }
     }
 
     private void OnDisable()
@@ -107,6 +123,27 @@ public class ChatManager : MonoBehaviour
         {
             sendInputMessageAction.performed -= OnSendInputPerformed;
             sendInputMessageAction.Disable();
+        }
+        
+        // NEW LOGIC: When the chat panel closes, always release the movement lock.
+        if (chatFocusHandler != null)
+        {
+            chatFocusHandler.SetChatActiveState(false);
+            inputField.onSelect.RemoveListener(OnInputFieldSelect);
+        }
+    }
+    
+    // NEW: This method is called when the input field is selected (clicked on).
+    private void OnInputFieldSelect(string text)
+    {
+        // **FIXED:** Access the public property IsControlsActive from FirstPersonMovement.
+        if (FirstPersonMovement.Instance != null && FirstPersonMovement.Instance.IsControlsActive)
+        {
+            if (chatFocusHandler != null)
+            {
+                // This re-locks movement and re-focuses the chat box
+                chatFocusHandler.SetChatActiveState(true); 
+            }
         }
     }
 
@@ -123,17 +160,14 @@ public class ChatManager : MonoBehaviour
 
     void Start()
     {
-        if (inputField != null)
-        {
-            inputField.ActivateInputField();
-        }
+        // Start logic is now empty as initialization is handled in OnEnable
     }
 
     public void InitializeChat()
     {
         if (isChatInitialized) return; 
 
-        isChatInitialized = true; // Set flag immediately to prevent duplication/race conditions
+        isChatInitialized = true; 
         DisplayMessage("Welcome to the Convai Assistant Chat!", MessageSource.Bot);
     }
 
@@ -147,16 +181,14 @@ public class ChatManager : MonoBehaviour
         // --- DEDUPLICATION CHECK ---
         if (source == MessageSource.Bot)
         {
-            // Check if the exact same message was just displayed by the bot.
             if (messageContent.Trim().Equals(_lastBotMessageDisplayed.Trim(), System.StringComparison.OrdinalIgnoreCase))
             {
                 Debug.LogWarning($"ChatManager: Blocking identical duplicate bot message: '{messageContent}'");
                 return; 
             }
-            // Update the last displayed message for the next check
             _lastBotMessageDisplayed = messageContent;
         }
-        else // User message always clears the cache
+        else 
         {
             _lastBotMessageDisplayed = ""; 
         }
@@ -177,7 +209,7 @@ public class ChatManager : MonoBehaviour
         {
             formattedContent = "<b>You:</b> " + messageContent; 
         } 
-        else if (isChatInitialized) // Bot Message with Prefix (after welcome)
+        else if (isChatInitialized) 
         {
             formattedContent = "<b>AI Assistant:</b> " + messageContent; 
         }
@@ -211,7 +243,7 @@ public class ChatManager : MonoBehaviour
             LayoutRebuilder.ForceRebuildLayoutImmediate(contentPanel.GetComponent<RectTransform>());
         }
         
-        // Autoscroll (using manual vertical position set, which is reliable after a forced rebuild)
+        // Autoscroll 
         if (scrollView != null)
         {
             scrollView.verticalNormalizedPosition = 0f;
@@ -246,7 +278,7 @@ public class ChatManager : MonoBehaviour
 
     private void OnConvaiResponseReceived(string responseText, bool isError)
     {
-        // NEW FIX: Check the cooldown timer. If we just processed a response, ignore this one.
+        // NEW FIX: Check the cooldown timer.
         if (Time.time < lastResponseTime + RESPONSE_COOLDOWN)
         {
             Debug.LogWarning("ChatManager: Blocking duplicate/fast response due to cooldown.");
