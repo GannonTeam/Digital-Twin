@@ -1,3 +1,4 @@
+/*
 using System;
 using System.Collections.Generic;
 using Convai.Scripts.Runtime.Attributes;
@@ -77,7 +78,7 @@ namespace Convai.Scripts.Runtime.Core
 
                 if (angleToLastHitNPC > visionConeAngle || distanceToLastHitNPC > rayLength * 1.2f)
                 {
-                    //ConvaiLogger.DebugLog($"Player left {_lastHitNpc.gameObject.name}", ConvaiLogger.LogCategory.Character);
+                    ConvaiLogger.DebugLog($"Player left {_lastHitNpc.gameObject.name}", ConvaiLogger.LogCategory.Character);
                     UpdateActiveNPC(null);
                 }
             }
@@ -143,7 +144,7 @@ namespace Convai.Scripts.Runtime.Core
             if (activeConvaiNPC != newActiveNPC)
             {
                 // Deactivate the currently active NPC, if any.
-                if (activeConvaiNPC != null) //activeConvaiNPC.isCharacterActive = false;
+                if (activeConvaiNPC != null) activeConvaiNPC.isCharacterActive = false;
 
                 // Update the reference to the new active NPC.
                 activeConvaiNPC = newActiveNPC;
@@ -216,3 +217,4 @@ namespace Convai.Scripts.Runtime.Core
         }
     }
 }
+*/

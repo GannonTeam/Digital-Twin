@@ -1,21 +1,30 @@
 using UnityEngine;
 using UnityEngine.InputSystem; 
+// We are now using Mouse and Pointer from the InputSystem
 
-// FIX: Changed IPlayerActions to IPlayerMovementActions
 public class FirstPersonMovement : MonoBehaviour, @PlayerInputs.IPlayerMovementActions 
 {
+    // --- STATIC REFERENCE (Singleton Pattern for easy access) ---
+    public static FirstPersonMovement Instance { get; private set; } 
+    
     // --- ADJUSTABLE SETTINGS ---
     [Header("Movement Settings")]
     public float walkingSpeed = 4.0f;
     
     [Header("Camera Settings")]
     public float lookSpeed = 0.75f;
+    
+    [Header("Chat/UI Unlock Settings")]
+    [Tooltip("Percentage of the screen width that defines the 3D viewport unlock area (e.5 for the left half).")]
+    public float viewportUnlockBoundary = 0.5f;
 
     // --- STATE AND INPUT VARIABLES ---
     private @PlayerInputs playerInputs;
     private CharacterController characterController;
-    
-    private bool isControlsActive = false; // Tracks if movement/look is allowed
+    private Camera mainCamera; 
+
+    public bool IsControlsActive { get; private set; } = false; 
+    public bool isMovementLockedByChat = false; 
     
     private Vector2 moveInput;
     private Vector2 lookInput;
@@ -23,96 +32,174 @@ public class FirstPersonMovement : MonoBehaviour, @PlayerInputs.IPlayerMovementA
 
     void Awake()
     {
-        // Instantiate the Input Action Class
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+        
         playerInputs = new @PlayerInputs();
     }
 
     void OnEnable()
     {
-        // FIX: Changed playerInputs.Player to playerInputs.PlayerMovement
         playerInputs.PlayerMovement.SetCallbacks(this);
-        playerInputs.PlayerMovement.Enable(); // FIX: Changed playerInputs.Player to playerInputs.PlayerMovement
+        playerInputs.PlayerMovement.Enable(); 
         
-        // Ensure the OS cursor is always visible and unlocked on start
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // Start in the deactivated state
         SetControlsActive(false); 
     }
 
     void OnDisable()
     {
-        playerInputs.PlayerMovement.Disable(); // FIX: Changed playerInputs.Player to playerInputs.PlayerMovement
-        playerInputs.PlayerMovement.RemoveCallbacks(this); // FIX: Changed playerInputs.Player to playerInputs.PlayerMovement
+        playerInputs.PlayerMovement.Disable(); 
+        playerInputs.PlayerMovement.RemoveCallbacks(this); 
     }
 
     void Start()
     {
         characterController = GetComponent<CharacterController>();
+        mainCamera = Camera.main; 
+        
+        
     }
     
     // -------------------------------------------------------------
-    // INPUT CALLBACKS (IPlayerMovementActions Implementation)
+    // INPUT CALLBACKS (Used ONLY for Movement/Look/Cancel/Activate)
     // -------------------------------------------------------------
     
-    // Reads WASD input
     public void OnMove(InputAction.CallbackContext context)
     {
-        // Read the value if the action is performed, otherwise set to zero.
         moveInput = context.performed ? context.ReadValue<Vector2>() : Vector2.zero;
     }
 
-    // Reads Mouse Delta input (only active when RMB is held, due to asset binding)
     public void OnLook(InputAction.CallbackContext context)
     {
         lookInput = context.performed ? context.ReadValue<Vector2>() : Vector2.zero;
     }
     
-    // Activate: Left Mouse Button Down (Enter Control Mode)
+    // This action remains for UNLOCKED activation only.
     public void OnActivate(InputAction.CallbackContext context)
     {
-        // If Left Click is performed AND we are NOT in control mode, activate.
-        if (context.performed && !isControlsActive)
+        if (!context.performed) return;
+
+        // Only allow the input action to activate if the chat is not currently forcing a lock.
+        if (!IsControlsActive && !isMovementLockedByChat)
         {
             SetControlsActive(true);
         }
     }
     
-    // Cancel: Escape Key Down (Exit Control Mode)
     public void OnCancel(InputAction.CallbackContext context)
     {
-        // If Escape is pressed AND we are currently in control mode, deactivate.
-        if (context.performed && isControlsActive)
+        if (context.performed && IsControlsActive)
         {
             SetControlsActive(false);
         }
     }
     
     // -------------------------------------------------------------
-    // STATE MANAGEMENT
+    // MOVEMENT AND UNLOCK LOGIC (Update)
+    // -------------------------------------------------------------
+
+    void Update()
+    {
+        HandleUnlockClickNative(); // NEW Native Input System check
+        HandleRotation();
+        HandleMovement();
+    }
+
+    private void HandleUnlockClickNative()
+    {
+        // 1. Check if movement is currently locked by the chat UI.
+        if (!isMovementLockedByChat) return;
+        
+        // Ensure Mouse is available and check for LMB press (active input).
+        var mouse = Mouse.current;
+        if (mouse == null || !mouse.leftButton.wasPressedThisFrame) return;
+
+        // Read position directly from the Mouse input device.
+        Vector2 mousePosition = mouse.position.ReadValue();
+        float screenWidthUnlockLimit = Screen.width * viewportUnlockBoundary;
+
+
+        // 2. Check if the click is on the left side.
+        if (mousePosition.x < screenWidthUnlockLimit)
+        {
+
+            // Optional Raycast Check: Check if the click hit a scene object.
+            if (mainCamera != null)
+            {
+                Ray ray = mainCamera.ScreenPointToRay(mousePosition);
+                if (!Physics.Raycast(ray))
+                {
+                    return; 
+                }
+            }
+            
+            // 3. Unlock movement via ChatFocusHandler
+            ChatFocusHandler chatHandler = FindObjectOfType<ChatFocusHandler>();
+            if (chatHandler != null)
+            {
+                chatHandler.SetChatActiveState(false);
+            }
+        }
+    }
+
+    // -------------------------------------------------------------
+    // CHAT/UI CONTROL METHOD
+    // -------------------------------------------------------------
+
+    public void SetMovementLock(bool isLocked)
+    {
+        isMovementLockedByChat = isLocked;
+        
+        if (isLocked)
+        {
+            // Lock Movement and disable Left Click activation
+            SetControlsActive(false);
+            playerInputs.PlayerMovement.Activate.Disable(); 
+        }
+        else
+        {
+            // Unlock Movement and re-enable Left Click activation
+            playerInputs.PlayerMovement.Activate.Enable();
+            SetControlsActive(true); 
+        }
+    }
+
+
+    // -------------------------------------------------------------
+    // CORE STATE MANAGEMENT
     // -------------------------------------------------------------
 
     private void SetControlsActive(bool isActive)
     {
-        isControlsActive = isActive;
+        if (isMovementLockedByChat && isActive) 
+        {
+            return;
+        }
 
-        // The OS cursor remains visible and unlocked regardless of state.
+        IsControlsActive = isActive; 
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true; 
 
         if (isActive)
         {
-            // Optionally, hide the OS cursor when active if you want a cleaner look while moving
-            // Cursor.visible = false;
-            Debug.Log("Controls Activated (Ready for RMB Look)");
+            // Debug.Log is handled by calling functions
         }
         else
         {
-            // Stop movement immediately upon deactivating controls
             moveInput = Vector2.zero;
             lookInput = Vector2.zero;
-            Debug.Log("Controls Deactivated (Use Left Click to Re-Activate)");
+            // Debug.Log is handled by calling functions
         }
     }
 
@@ -120,24 +207,15 @@ public class FirstPersonMovement : MonoBehaviour, @PlayerInputs.IPlayerMovementA
     // MOVEMENT AND ROTATION LOGIC
     // -------------------------------------------------------------
 
-    void Update()
-    {
-        HandleRotation();
-        HandleMovement();
-    }
-
     private void HandleRotation()
     {
-        // Only allow looking if controls are active (Left Click was pressed).
-        if (!isControlsActive)
+        if (!IsControlsActive)
         {
             return;
         }
 
-        // Horizontal Rotation (Yaw)
         transform.Rotate(0, lookInput.x * lookSpeed, 0);
 
-        // Vertical Rotation (Pitch)
         rotationX -= lookInput.y * lookSpeed;
         rotationX = Mathf.Clamp(rotationX, -90f, 90f); 
         Camera.main.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
@@ -145,8 +223,7 @@ public class FirstPersonMovement : MonoBehaviour, @PlayerInputs.IPlayerMovementA
 
     private void HandleMovement()
     {
-        // Stop movement immediately if controls are not active.
-        if (!isControlsActive)
+        if (!IsControlsActive)
         {
             return;
         }
@@ -155,11 +232,9 @@ public class FirstPersonMovement : MonoBehaviour, @PlayerInputs.IPlayerMovementA
         Vector3 rightMovement = transform.right * moveInput.x;
         Vector3 desiredMove = (forwardMovement + rightMovement).normalized * walkingSpeed;
         
-        // --- Stick to the ground logic (No Gravity/Falling) ---
         float yStick = 0;
         if (characterController.isGrounded)
         {
-             // Apply a small downward force to keep it stuck to the floor/slopes.
              yStick = -0.1f; 
         }
         

@@ -1,4 +1,5 @@
-using System;
+/*
+ * using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -13,6 +14,7 @@ using Grpc.Core;
 using Service;
 using UnityEngine;
 using static Service.GetResponseRequest.Types;
+
 
 namespace Convai.Scripts.Runtime.Core
 {
@@ -67,7 +69,7 @@ namespace Convai.Scripts.Runtime.Core
         {
             if (_chatUIHandler != null && !string.IsNullOrEmpty(_currentTranscript)) _chatUIHandler.SendPlayerText(_currentTranscript);
         }
-
+        
         private void OnDestroy()
         {
             ConvaiNPCManager.Instance.OnActiveNPCChanged -= HandleActiveNPCChanged;
@@ -139,6 +141,11 @@ namespace Convai.Scripts.Runtime.Core
                 while (await call.ResponseStream.MoveNext())
                 {
                     GetResponseResponse result = call.ResponseStream.Current;
+    
+
+                    Debug.Log($"[ConvaiGRPCAPI] Received response from server: {result.ToString()}");
+                    
+                    Debug.Log($"[ConvaiGRPCAPI] Received response from server: {result.ToString()}");
 
                     if (!string.IsNullOrEmpty(result.SessionId))
                     {
@@ -239,37 +246,19 @@ namespace Convai.Scripts.Runtime.Core
         // This method will be called whenever the active NPC changes.
         private void HandleActiveNPCChanged(ConvaiNPC newActiveNPC)
         {
-            // CRITICAL FIX: If the new NPC is the same as the current active one, DO NOTHING.
-            // This stops the constant disposal/recreation when the manager spams the same NPC object.
-            if (newActiveNPC == _activeConvaiNPC)
-            {
-                return;
-            }
-    
-            // Safety check: If the manager is setting the active NPC to NULL (deactivating), 
-            // we assume the chat should remain persistent and exit.
-            if (newActiveNPC == null)
-            {
-                ConvaiLogger.Info("Bypassing connection disposal logic to keep chat persistent.", ConvaiLogger.LogCategory.Character);
-                // We still need to clear the _activeConvaiNPC reference, but WITHOUT disposal.
-                _activeConvaiNPC = null;
-                return;
-            }
-    
-            // If we reach here, a NEW, DIFFERENT, non-null NPC is taking over.
-            // Proceed with interruption and disposal of the OLD token.
+            if (newActiveNPC != null)
+                InterruptCharacterSpeech(newActiveNPC);
 
-            if (newActiveNPC != null) 
-                InterruptCharacterSpeech(newActiveNPC); // Interrupts the OLD token via its logic
-
-            // Cancel the ongoing gRPC call (the old token)
+            // Cancel the ongoing gRPC call
             try
             {
                 _cancellationTokenSource?.Cancel();
             }
             catch (Exception e)
             {
-                // ... (unchanged)
+                // Handle the Exception, which can occur if the CancellationTokenSource is already disposed. 
+                ConvaiLogger.Warn("Exception in GRPCAPI:HandleActiveNPCChanged: " + e.Message,
+                    ConvaiLogger.LogCategory.Character);
             }
             finally
             {
@@ -280,7 +269,7 @@ namespace Convai.Scripts.Runtime.Core
             }
 
             _cancellationTokenSource = new CancellationTokenSource(); // Create a new token for future calls
-            _activeConvaiNPC = newActiveNPC; // Update to the new NPC
+            _activeConvaiNPC = newActiveNPC;
         }
 
         /// <summary>
@@ -539,8 +528,7 @@ namespace Convai.Scripts.Runtime.Core
         {
             // If the active NPC is speaking, cancel the ongoing gRPC call,
             // clear the response queue, and reset the character's speaking state, lip-sync, animation, and audio playback
-            // Check if we are interrupting an actively speaking character (i.e., not just deactivating them)
-            if (newActiveNPC != null && newActiveNPC.IsCharacterTalking) // Use IsCharacterTalking instead of isCharacterActive
+            if (newActiveNPC != null && newActiveNPC.isCharacterActive)
             {
                 // Cancel the ongoing gRPC call
                 try
@@ -549,7 +537,8 @@ namespace Convai.Scripts.Runtime.Core
                 }
                 catch (Exception e)
                 {
-                    // ... (unchanged)
+                    // Handle the Exception, which can occur if the CancellationTokenSource is already disposed. 
+                    ConvaiLogger.Warn("Exception in Interrupt Character Speech: " + e.Message, ConvaiLogger.LogCategory.Character);
                 }
                 finally
                 {
@@ -854,3 +843,4 @@ namespace Convai.Scripts.Runtime.Core
         #endregion
     }
 }
+*/

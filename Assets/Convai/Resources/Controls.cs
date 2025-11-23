@@ -181,6 +181,15 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""RightClickLook"",
+                    ""type"": ""Button"",
+                    ""id"": ""b718caed-8e30-4287-ae52-cf46f8fecf67"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -403,6 +412,17 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""action"": ""ToggleChat"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""51f806cd-8745-4da4-8bb7-fe06b0d3b741"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""RightClickLook"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -460,6 +480,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         m_Player_ToggleChat = m_Player.FindAction("ToggleChat", throwIfNotFound: true);
         m_Player_ToggleSettings = m_Player.FindAction("ToggleSettings", throwIfNotFound: true);
         m_Player_CursorUnlock = m_Player.FindAction("CursorUnlock", throwIfNotFound: true);
+        m_Player_RightClickLook = m_Player.FindAction("RightClickLook", throwIfNotFound: true);
     }
 
     ~@Controls()
@@ -550,6 +571,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_ToggleChat;
     private readonly InputAction m_Player_ToggleSettings;
     private readonly InputAction m_Player_CursorUnlock;
+    private readonly InputAction m_Player_RightClickLook;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -601,6 +623,10 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/CursorUnlock".
         /// </summary>
         public InputAction @CursorUnlock => m_Wrapper.m_Player_CursorUnlock;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/RightClickLook".
+        /// </summary>
+        public InputAction @RightClickLook => m_Wrapper.m_Player_RightClickLook;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -657,6 +683,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @CursorUnlock.started += instance.OnCursorUnlock;
             @CursorUnlock.performed += instance.OnCursorUnlock;
             @CursorUnlock.canceled += instance.OnCursorUnlock;
+            @RightClickLook.started += instance.OnRightClickLook;
+            @RightClickLook.performed += instance.OnRightClickLook;
+            @RightClickLook.canceled += instance.OnRightClickLook;
         }
 
         /// <summary>
@@ -698,6 +727,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @CursorUnlock.started -= instance.OnCursorUnlock;
             @CursorUnlock.performed -= instance.OnCursorUnlock;
             @CursorUnlock.canceled -= instance.OnCursorUnlock;
+            @RightClickLook.started -= instance.OnRightClickLook;
+            @RightClickLook.performed -= instance.OnRightClickLook;
+            @RightClickLook.canceled -= instance.OnRightClickLook;
         }
 
         /// <summary>
@@ -847,5 +879,12 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnCursorUnlock(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "RightClickLook" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRightClickLook(InputAction.CallbackContext context);
     }
 }
