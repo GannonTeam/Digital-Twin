@@ -5,15 +5,10 @@ using UnityEngine.EventSystems;
 
 namespace Convai.Scripts.Runtime.Addons
 {
-    /// <summary>
-    ///     Class for handling player movement including walking, running, jumping, and looking around.
-    /// </summary>
-    [RequireComponent(typeof(CharacterController))]
-    [DisallowMultipleComponent]
-    [AddComponentMenu("Convai/Player Movement")]
-    [HelpURL("https://docs.convai.com/api-docs/plugins-and-integrations/unity-plugin/scripts-overview")]
+    // ... (omitting class attributes and fields) ...
     public class ConvaiPlayerMovement : MonoBehaviour
     {
+        // ... (omitting fields and Awake/Start methods) ...
         [Header("Movement Parameters")] [SerializeField] [Tooltip("The speed at which the player walks.")] [Range(1, 10)]
         private float walkingSpeed = 3f;
 
@@ -44,7 +39,6 @@ namespace Convai.Scripts.Runtime.Addons
 
         private void Awake()
         {
-            // Singleton pattern to ensure only one instance exists
             if (Instance == null)
                 Instance = this;
             else
@@ -58,10 +52,7 @@ namespace Convai.Scripts.Runtime.Addons
 
         private void Update()
         {
-            // Check for running state and move the player
             MovePlayer();
-
-            // Handle the player and camera rotation
             RotatePlayerAndCamera();
         }
 
@@ -90,10 +81,8 @@ namespace Convai.Scripts.Runtime.Addons
             }
 
             if (!_characterController.isGrounded)
-                // Apply gravity only when canMove is true
                 _moveDirection.y -= gravity * Time.deltaTime;
 
-            // Move the character
             _characterController.Move((_moveDirection + horizontalMovement) * Time.deltaTime);
         }
 
@@ -104,7 +93,17 @@ namespace Convai.Scripts.Runtime.Addons
 
         private void RotatePlayerAndCamera()
         {
-            if (Cursor.lockState != CursorLockMode.Locked) return;
+            if (!ConvaiInputManager.Instance.IsLookingHeld)
+            {
+                // *** MODIFIED: Ensure cursor is unlocked but DO NOT hide it ***
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                return;
+            }
+
+            // *** MODIFIED: Keep the cursor visible and unlocked while looking ***
+            Cursor.lockState = CursorLockMode.None; // We need to keep it unlocked!
+            Cursor.visible = true; 
 
             // Vertical rotation
             _rotationX -= ConvaiInputManager.Instance.lookVector.y * lookSpeedMultiplier;

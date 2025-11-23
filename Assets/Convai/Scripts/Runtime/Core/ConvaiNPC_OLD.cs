@@ -1,3 +1,7 @@
+
+/*
+
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -89,8 +93,6 @@ namespace Convai.Scripts.Runtime.Core
         private const float BUFFER_TIMEOUT = 1.5f; // 1500ms timeout
         private int _currentSampleRate;
 
-        
-        
 
         private bool IsInConversationWithAnotherNPC
         {
@@ -178,17 +180,6 @@ namespace Convai.Scripts.Runtime.Core
 
             if (initializeSessionID) sessionID = await ConvaiGRPCAPI.InitializeSessionIDAsync(characterName, _client, characterID, sessionID);
             _convaiChatUIHandler = ConvaiChatUIHandler.Instance;
-        }
-        
-        private void Update()
-        {
-            // Override any deactivation attempts from ConvaiNPCManager or other scripts
-            if (!isCharacterActive)
-            {
-                isCharacterActive = true;
-                // You might want to log this once to ensure it's working:
-                ConvaiLogger.Info("Forcing isCharacterActive to TRUE.", ConvaiLogger.LogCategory.Character);
-            }
         }
 
         private void OnEnable()
@@ -594,3 +585,6 @@ namespace Convai.Scripts.Runtime.Core
         }
     }
 }
+
+
+*/

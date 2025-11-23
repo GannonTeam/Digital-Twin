@@ -1,5 +1,12 @@
 fileFormatVersion: 2
 guid: 2af4f2970466e34408dc852b6cc58653
+AssetOrigin:
+  serializedVersion: 1
+  productId: 235621
+  packageName: NPC AI Engine - Dialog, actions, voice and lipsync - Convai
+  packageVersion: 3.3.0
+  assetPath: Assets/Convai/Resources/Controls.inputactions
+  uploadId: 767644
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -12,10 +19,3 @@ ScriptedImporter:
   wrapperCodePath: 
   wrapperClassName: 
   wrapperCodeNamespace: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 235621
-  packageName: NPC AI Engine - Dialog, actions, voice and lipsync - Convai
-  packageVersion: 3.3.0
-  assetPath: Assets/Convai/Resources/Controls.inputactions
-  uploadId: 767644
