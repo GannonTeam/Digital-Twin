@@ -1,3 +1,4 @@
+using System; // Added System for the Action delegate
 using Convai.Scripts.Runtime.Features;
 using Convai.Scripts.Runtime.LoggerSystem;
 using UnityEngine;
@@ -69,7 +70,9 @@ namespace Convai.Scripts.Runtime.Core
         private void OnDisable()
         {
             if (_convaiActionsHandler != null)
-                _convaiActionsHandler.UnregisterForActionEvents(ConvaiActionsHandler_OnActionStarted, ConvaiActionsHandler_OnActionEnded);
+                // --- FIX: Direct Event Unsubscribe (+= becomes -=) ---
+                _convaiActionsHandler.ActionEnded -= ConvaiActionsHandler_OnActionEnded;
+                _convaiActionsHandler.ActionStarted -= ConvaiActionsHandler_OnActionStarted;
         }
 
         /// <summary>
@@ -86,7 +89,9 @@ namespace Convai.Scripts.Runtime.Core
             InitializeTargetObject();
 
             if (TryGetComponent(out _convaiActionsHandler))
-                _convaiActionsHandler.RegisterForActionEvents(ConvaiActionsHandler_OnActionStarted, ConvaiActionsHandler_OnActionEnded);
+                // --- FIX: Direct Event Subscribe (uses +=) ---
+                _convaiActionsHandler.ActionStarted += ConvaiActionsHandler_OnActionStarted;
+                _convaiActionsHandler.ActionEnded += ConvaiActionsHandler_OnActionEnded;
         }
 
         private void ConvaiActionsHandler_OnActionStarted(string action, GameObject target)
@@ -158,7 +163,7 @@ namespace Convai.Scripts.Runtime.Core
         /// </summary>
         private void UpdateTarget()
         {
-            _desiredLookAtWeight = lookAway ? Random.Range(0.2f, 1.0f) : 1f;
+            _desiredLookAtWeight = lookAway ? UnityEngine.Random.Range(0f, 10f) : 1f;
         }
 
         /// <summary>
