@@ -987,45 +987,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: df9b82a9fba405744ac44d05d85b936c, type: 3}
---- !u!1 &530777684 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8995187496934191311, guid: 69dd98fa71bd5e649969b163d693f61b, type: 3}
-  m_PrefabInstance: {fileID: 1880660427}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &530777690
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 530777684}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 291245b65cd24054afc33b6f0962ac8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::NavMeshFollower
---- !u!195 &530777691
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 530777684}
-  m_Enabled: 1
-  m_AgentTypeID: 0
-  m_Radius: 0.5
-  m_Speed: 3.5
-  m_Acceleration: 8
-  avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
 --- !u!1 &561999768
 GameObject:
   m_ObjectHideFlags: 0
@@ -1513,9 +1474,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Convai.Scripts.Runtime.Custom.ClickableDashboardToggle
   dashboardUI: {fileID: 1379878217}
   clickAction: {fileID: 3001919216989983466, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  printerId: Prusa_i3_mk3_05
-  toggleWhenSame: 0
-  requestSingleOnShow: 1
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -1579,7 +1537,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4643839334253854785, guid: 56cfe70dc09a93146a7cec3da81e844f, type: 3}
       propertyPath: actionMethods.Array.size
-      value: 5
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 4643839334253854785, guid: 56cfe70dc09a93146a7cec3da81e844f, type: 3}
       propertyPath: actionResponseList.Array.size
@@ -1591,11 +1549,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4643839334253854785, guid: 56cfe70dc09a93146a7cec3da81e844f, type: 3}
       propertyPath: actionMethods.Array.data[3].action
-      value: Show Me
+      value: Highlight
       objectReference: {fileID: 0}
     - target: {fileID: 4643839334253854785, guid: 56cfe70dc09a93146a7cec3da81e844f, type: 3}
       propertyPath: actionMethods.Array.data[4].action
-      value: Display Printer Dashboard
+      value: Highlight
       objectReference: {fileID: 0}
     - target: {fileID: 4643839334253854785, guid: 56cfe70dc09a93146a7cec3da81e844f, type: 3}
       propertyPath: actionMethods.Array.data[5].action
@@ -1619,7 +1577,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4643839334253854785, guid: 56cfe70dc09a93146a7cec3da81e844f, type: 3}
       propertyPath: actionMethods.Array.data[4].actionChoice
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 4643839334253854785, guid: 56cfe70dc09a93146a7cec3da81e844f, type: 3}
       propertyPath: actionMethods.Array.data[5].actionChoice
@@ -1801,25 +1759,54 @@ MonoBehaviour:
   m_GameObject: {fileID: 954341278}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4cdcca4916560541aba49975f073717, type: 3}
+  m_Script: {fileID: 11500000, guid: 6018a62ba049f6542af19ebb5959a19d, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PrinterUIHandler
-  printerIdLabel: {fileID: 1104981336}
-  printerIdInput: {fileID: 0}
-  statusText: {fileID: 376642669}
-  progressText: {fileID: 1209898287}
-  progressSlider: {fileID: 0}
-  bedTempText: {fileID: 1032424102}
-  nozzleTempText: {fileID: 386342242}
-  statusLight: {fileID: 1277862548}
-  statusPrefix: 'Status: '
-  progressPrefix: 'Progress: '
-  bedTempPrefix: 'Bed: '
-  nozzleTempPrefix: 'Nozzle: '
-  progressLerp: 8
-  tempLerp: 6
-  showPrinterViaManagerOnSet: 1
-  requestSingleOnSet: 1
+  m_EditorClassIdentifier: Assembly-CSharp::DashboardManager
+  connector: {fileID: 1465352346}
+--- !u!1 &963281015
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 963281017}
+  - component: {fileID: 963281018}
+  m_Layer: 0
+  m_Name: HighlightingTester
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &963281017
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963281015}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 7.79267, y: 1.26082, z: 0.505}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &963281018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963281015}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01daa365354aa5746babcac5ebb13002, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HighlightDemoController
 --- !u!1 &967899680
 GameObject:
   m_ObjectHideFlags: 0
@@ -2423,8 +2410,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20
-  m_fontSizeBase: 20
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2475,57 +2462,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1104981334}
   m_CullTransparentMesh: 1
---- !u!1 &1130576614
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1130576616}
-  - component: {fileID: 1130576615}
-  m_Layer: 0
-  m_Name: PrinterPoller
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1130576615
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1130576614}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 664eb0c5dac847e2982950d79e9b41be, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PrinterPollingClient
-  backendBaseUrl: https://digitwinbackend.quangphuly.online
-  endpointPath: /api/printers
-  perIdEndpointFormat: 
-  pollInterval: 0.5
-  startOnAwake: 1
-  bearerToken: 
-  extraHeader: 
---- !u!4 &1130576616
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1130576614}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 11.69688, y: 0, z: 0.3111}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1209898285
 GameObject:
   m_ObjectHideFlags: 0
@@ -2694,9 +2630,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Convai.Scripts.Runtime.Custom.ClickableDashboardToggle
   dashboardUI: {fileID: 1379878217}
   clickAction: {fileID: 3001919216989983466, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  printerId: Prusa_i3_mk3_03
-  toggleWhenSame: 0
-  requestSingleOnShow: 1
 --- !u!1 &1277862546
 GameObject:
   m_ObjectHideFlags: 0
@@ -2817,7 +2750,6 @@ GameObject:
   - component: {fileID: 1379878220}
   - component: {fileID: 1379878219}
   - component: {fileID: 1379878218}
-  - component: {fileID: 1379878222}
   m_Layer: 5
   m_Name: RightScreenCanvas
   m_TagString: Untagged
@@ -2908,19 +2840,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &1379878222
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1379878217}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6018a62ba049f6542af19ebb5959a19d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DashboardManager
-  activePanel: {fileID: 954341283}
 --- !u!1 &1386149973 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 39aa5b905fffa33499b4c8081d9dc239, type: 3}
@@ -3143,15 +3062,6 @@ MonoBehaviour:
   - Name: Pursa_i3_mk3_01
     Description: 
     gameObject: {fileID: 1768703342}
-  - Name: Pursa_i3_mk3_02
-    Description: 
-    gameObject: {fileID: 177006767}
-  - Name: Pursa_i3_mk3_03
-    Description: 
-    gameObject: {fileID: 7316969}
-  - Name: Pursa_i3_mk3_04
-    Description: 
-    gameObject: {fileID: 252098613}
   - Name: Pursa_i3_mk3_05
     Description: 
     gameObject: {fileID: 826598920}
@@ -3526,6 +3436,24 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1695695195965242767, guid: 653bc60b6c66db74fa1b147d2db2be05, type: 3}
   m_PrefabInstance: {fileID: 8468885564721670554}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1768703347
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1768703342}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4cdcca4916560541aba49975f073717, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PrinterUIHandler
+  PrinterId: PrusaMini
+  statusText: {fileID: 376642669}
+  progressText: {fileID: 1209898287}
+  bedTempText: {fileID: 1032424102}
+  nozzleTempText: {fileID: 386342242}
+  statusLight: {fileID: 1277862548}
 --- !u!114 &1768703351
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3553,9 +3481,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ClickableDashboardToggle
   dashboardUI: {fileID: 1379878217}
   clickAction: {fileID: 3001919216989983466, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  printerId: Prusa_i3_mk3_01
-  toggleWhenSame: 0
-  requestSingleOnShow: 1
 --- !u!1 &1818806667
 GameObject:
   m_ObjectHideFlags: 0
@@ -3821,12 +3746,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2096704895}
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 8995187496934191311, guid: 69dd98fa71bd5e649969b163d693f61b, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 530777691}
-    - targetCorrespondingSourceObject: {fileID: 8995187496934191311, guid: 69dd98fa71bd5e649969b163d693f61b, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 530777690}
     - targetCorrespondingSourceObject: {fileID: 8995187497845040384, guid: 69dd98fa71bd5e649969b163d693f61b, type: 3}
       insertIndex: -1
       addedObject: {fileID: 508538560}
@@ -4027,9 +3946,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Convai.Scripts.Runtime.Custom.ClickableDashboardToggle
   dashboardUI: {fileID: 1379878217}
   clickAction: {fileID: 3001919216989983466, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  printerId: Prusa_i3_mk3_02
-  toggleWhenSame: 0
-  requestSingleOnShow: 1
 --- !u!4 &2032789782 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2072642534788065077, guid: 653bc60b6c66db74fa1b147d2db2be05, type: 3}
@@ -4062,9 +3978,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Convai.Scripts.Runtime.Custom.ClickableDashboardToggle
   dashboardUI: {fileID: 1379878217}
   clickAction: {fileID: 3001919216989983466, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  printerId: Prusa_i3_mk3_04
-  toggleWhenSame: 0
-  requestSingleOnShow: 1
 --- !u!1 &2061837670
 GameObject:
   m_ObjectHideFlags: 0
@@ -4504,6 +4417,9 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1695695195965242767, guid: 653bc60b6c66db74fa1b147d2db2be05, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 1768703347}
+    - targetCorrespondingSourceObject: {fileID: 1695695195965242767, guid: 653bc60b6c66db74fa1b147d2db2be05, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 1768703351}
     - targetCorrespondingSourceObject: {fileID: 1695695195965242767, guid: 653bc60b6c66db74fa1b147d2db2be05, type: 3}
       insertIndex: -1
@@ -4529,6 +4445,6 @@ SceneRoots:
   - {fileID: 515852388}
   - {fileID: 2095523001}
   - {fileID: 1379878221}
+  - {fileID: 963281017}
   - {fileID: 1880660427}
   - {fileID: 865756320}
-  - {fileID: 1130576616}

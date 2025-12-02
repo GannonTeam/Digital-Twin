@@ -74,8 +74,9 @@ namespace Convai.Scripts.Runtime.Features
             ICustomAction[] actions = new ICustomAction[]
             {
                 // ACTIONS DELEGATED TO EXTERNAL CLASSES:
+                new DisplayPrinterDashboardAction(),
                 new ShowMeAction(),
-                new HighlightAction(), 
+                //new HighlightAction(), 
                 new MoveToAction(),    
                 new PickUpAction(),    
                 new DropAction(),      
@@ -129,6 +130,18 @@ namespace Convai.Scripts.Runtime.Features
             {
                 ParseActions(actionResponseList[0]);
                 actionResponseList.RemoveAt(0);
+            }
+        }
+        
+        public void SendTextDataAsync(string text)
+        {
+            if (_currentNPC != null)
+            {
+                _currentNPC.SendTextDataAsync(text);
+            }
+            else
+            {
+                ConvaiLogger.Warn("Cannot send text data: ConvaiNPC reference is missing.", ConvaiLogger.LogCategory.Actions);
             }
         }
 
@@ -319,9 +332,11 @@ namespace Convai.Scripts.Runtime.Features
             [FormerlySerializedAs("Action")] [SerializeField]
             public string action;
 
+            [HideInInspector] // <--- ADD THIS ATTRIBUTE
             [SerializeField] public string animationName;
             
             // Left for Inspector compatibility
+            [HideInInspector] // <--- ADD THIS ATTRIBUTE
             [SerializeField] public int actionChoice; 
         }
 
