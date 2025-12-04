@@ -299,6 +299,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A3B2200598
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -368,6 +372,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A412200657
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -528,6 +536,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A433100745
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -897,6 +909,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A411800644
+      objectReference: {fileID: 0}
     - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
       propertyPath: toggleWhenSame
       value: 1
@@ -1721,6 +1737,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 2474376574715741785, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
+      propertyPath: printerDevId
+      value: 0309CA532701326
+      objectReference: {fileID: 0}
     - target: {fileID: 7119843480705289022, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
       propertyPath: elementId
       value: Bambu_A1Mini_D4
@@ -1977,6 +1997,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 2474376574715741785, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
+      propertyPath: printerDevId
+      value: 0309CA532700899
+      objectReference: {fileID: 0}
     - target: {fileID: 7119843480705289022, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
       propertyPath: elementId
       value: Bambu_A1Mini_D11
@@ -2469,6 +2493,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A3B2300584
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2764,6 +2792,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A411800562
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2962,6 +2994,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 2474376574715741785, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
+      propertyPath: printerDevId
+      value: 0309CA532701634
+      objectReference: {fileID: 0}
     - target: {fileID: 7119843480705289022, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
       propertyPath: elementId
       value: Bambu_A1Mini_D8
@@ -3031,6 +3067,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 2474376574715741785, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
+      propertyPath: printerDevId
+      value: 0309CA532701233
+      objectReference: {fileID: 0}
     - target: {fileID: 7119843480705289022, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
       propertyPath: elementId
       value: Bambu_A1Mini_D12
@@ -3464,6 +3504,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A411800843
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3991,6 +4035,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A411900009
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4280,6 +4328,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: "01P00A440200612\t"
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4581,6 +4633,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 2474376574715741785, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
+      propertyPath: printerDevId
+      value: 0309CA532701319
+      objectReference: {fileID: 0}
     - target: {fileID: 7119843480705289022, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
       propertyPath: elementId
       value: Bambu_A1Mini_D3
@@ -4664,6 +4720,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A411600301
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4776,6 +4836,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 2474376574715741785, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
+      propertyPath: printerDevId
+      value: "0309CA532701459\t"
+      objectReference: {fileID: 0}
     - target: {fileID: 7119843480705289022, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
       propertyPath: elementId
       value: Bambu_A1Mini_D9
@@ -4859,6 +4923,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A3B2300468
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4961,6 +5029,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 2474376574715741785, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
+      propertyPath: printerDevId
+      value: 0309CA532701788
+      objectReference: {fileID: 0}
     - target: {fileID: 7119843480705289022, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
       propertyPath: elementId
       value: Bambu_A1Mini_D10
@@ -5300,6 +5372,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 2474376574715741785, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
+      propertyPath: printerDevId
+      value: 0309CA532701582
+      objectReference: {fileID: 0}
     - target: {fileID: 7119843480705289022, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
       propertyPath: elementId
       value: Bambu_A1Mini_D7
@@ -5469,6 +5545,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A411900453
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -5998,6 +6078,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 00M09A330100382
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6063,6 +6147,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 2474376574715741785, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
+      propertyPath: printerDevId
+      value: 0309CA532701305
+      objectReference: {fileID: 0}
     - target: {fileID: 7119843480705289022, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
       propertyPath: elementId
       value: Bambu_A1Mini_D2
@@ -6132,6 +6220,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 2474376574715741785, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
+      propertyPath: printerDevId
+      value: 0309CA532701268
+      objectReference: {fileID: 0}
     - target: {fileID: 7119843480705289022, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
       propertyPath: elementId
       value: Bambu_A1Mini_D5
@@ -6606,6 +6698,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A411800796
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6663,7 +6759,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Shelf_03 (1)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4673267435660925982, guid: 25f43d0275a19634cbed26652576d76f, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -6852,6 +6949,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A3B2400042
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -6917,6 +7018,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 2474376574715741785, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
+      propertyPath: printerDevId
+      value: 0309CA3C0500175
+      objectReference: {fileID: 0}
     - target: {fileID: 7119843480705289022, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
       propertyPath: elementId
       value: Bambu_A1Mini_D6
@@ -7319,6 +7424,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A411900453
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -7423,6 +7532,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A3B2300534
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -7591,6 +7704,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A3B2400144
+      objectReference: {fileID: 0}
     - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
       propertyPath: toggleWhenSame
       value: 1
@@ -8017,6 +8134,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: "01P00A433100716\t"
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8332,6 +8453,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A411300688
+      objectReference: {fileID: 0}
     - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
       propertyPath: toggleWhenSame
       value: 1
@@ -8738,6 +8863,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A3C1900861
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -8842,6 +8971,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A3B2100770
+      objectReference: {fileID: 0}
     - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
       propertyPath: toggleWhenSame
       value: 1
@@ -9113,6 +9246,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A412200339
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -9126,6 +9263,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 324226867}
     m_Modifications:
+    - target: {fileID: 5403350255041023516, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: m_Size.x
+      value: 0.006
+      objectReference: {fileID: 0}
+    - target: {fileID: 5403350255041023516, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: m_Size.y
+      value: 0.007
+      objectReference: {fileID: 0}
+    - target: {fileID: 5403350255041023516, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: m_Size.z
+      value: 0.014
+      objectReference: {fileID: 0}
     - target: {fileID: 7173762137744340340, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.1171
@@ -9174,6 +9323,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
+      propertyPath: printerDevId
+      value: 01P00A3B2300627
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -9369,6 +9522,10 @@ PrefabInstance:
       propertyPath: dashboardUI
       value: 
       objectReference: {fileID: 1379878217}
+    - target: {fileID: 2474376574715741785, guid: 899aab3210ef91c4986d276f8fefeb92, type: 3}
+      propertyPath: printerDevId
+      value: 0309CA532701026
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -9382,6 +9539,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4673267435660925982, guid: 25f43d0275a19634cbed26652576d76f, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5969371685818526191, guid: 25f43d0275a19634cbed26652576d76f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 8.06
@@ -9426,7 +9587,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Shelf_03
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 4673267435660925982, guid: 25f43d0275a19634cbed26652576d76f, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

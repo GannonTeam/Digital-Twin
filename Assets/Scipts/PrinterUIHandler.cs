@@ -7,7 +7,7 @@ using System;
 /// <summary>
 /// Printer UI handler for the single-panel dashboard.
 /// - Supports binding to a printer id at runtime via SetPrinterId(...).
-/// - Displays the JSON Name > GameObject Name > devId (Three-Tier Fallback).
+/// - Displays the GameObject Name > devId (Simplified Fallback).
 /// - When an id is set it can ask DashboardManager to show that printer and optionally ask the PollingClient to RequestSingle immediately.
 /// - Smooths numeric values and shows labeled fields (Status: Running, Progress: 23.5%, etc.)
 /// </summary>
@@ -63,7 +63,7 @@ public class PrinterUIHandler : MonoBehaviour
     private float displayedBed;
     private bool initialized;
 
-    // Stores the name of the GameObject that triggered this panel open (Tier 2 Fallback)
+    // Stores the name of the GameObject that triggered this panel open (The new primary name source)
     private string fallbackGameObjectName = string.Empty; 
 
     // the current bound printer id (empty if unbound)
@@ -71,14 +71,11 @@ public class PrinterUIHandler : MonoBehaviour
 
     void Awake()
     {
-        // Ensure any label reflects initial state
         if (printerIdLabel != null && string.IsNullOrEmpty(printerIdLabel.text))
             printerIdLabel.text = "--";
 
-        // Hook up input field if provided (user can type an id)
         if (printerIdInput != null)
         {
-            // Keep the input field in sync if label is set in inspector
             if (printerIdLabel != null && !string.IsNullOrEmpty(printerIdLabel.text) && printerIdLabel.text != "--")
                 printerIdInput.text = printerIdLabel.text;
 
@@ -94,7 +91,6 @@ public class PrinterUIHandler : MonoBehaviour
 
     /// <summary>
     /// Binds the panel to a printer id and sets a fallback name.
-    /// NOTE: This is the updated method signature requiring the gameObjectName fallback.
     /// </summary>
     public void SetPrinterId(string printerId, string gameObjectName, PrinterState initialState = null, bool triggerRequest = true)
     {
@@ -140,32 +136,24 @@ public class PrinterUIHandler : MonoBehaviour
         }
     }
     
-    // Original SetPrinterId wrapper (to maintain compatibility if called without gameObjectName)
     public void SetPrinterId(string printerId, PrinterState initialState = null, bool triggerRequest = true)
     {
-        // Fallback to null name if called without it.
         SetPrinterId(printerId, null, initialState, triggerRequest);
     }
 
     /// <summary>
     /// Helper to determine the best display name based on available data.
+    /// SIMPLIFIED: Always prioritize the GameObject name.
     /// </summary>
     private string GetBestAvailableName(PrinterState state, string currentId, string fallbackName)
     {
-        // Tier 1: JSON Name (from state data, nested under meta)
-        // Note: state.meta must be checked for null reference if the JSON might not contain meta at all.
-        if (state != null && state.meta != null && !string.IsNullOrEmpty(state.meta.name))
-        {
-            return state.meta.name;
-        }
-
-        // Tier 2: GameObject Fallback Name (Name of the object that was clicked)
+        // Tier 1: GameObject Fallback Name (The new and constant priority)
         if (!string.IsNullOrEmpty(fallbackName))
         {
             return fallbackName;
         }
-
-        // Tier 3: Raw ID (Last resort)
+        
+        // Tier 2: Raw ID (Last resort if no GameObject name was provided for some reason)
         if (!string.IsNullOrEmpty(currentId))
         {
             return currentId;
@@ -185,7 +173,6 @@ public class PrinterUIHandler : MonoBehaviour
             return;
         }
 
-        // When the user manually types an ID, we assume they want to initiate the entire request chain.
         SetPrinterId(newText.Trim(), null, true);
     }
 
@@ -198,7 +185,7 @@ public class PrinterUIHandler : MonoBehaviour
         displayedBed = (float)s.reported.bedC;
         initialized = true;
 
-        // Apply best name now that state data is available
+        // Apply best name now that state data is available (uses simplified logic)
         if (printerIdLabel != null)
         {
             printerIdLabel.text = GetBestAvailableName(s, CurrentPrinterId, fallbackGameObjectName);
@@ -223,7 +210,6 @@ public class PrinterUIHandler : MonoBehaviour
     /// </summary>
     public void DisplayState(PrinterState state)
     {
-        // NOTE: Comparing CurrentPrinterId to state.devId, as devId is the identifier from the JSON
         if (state == null || string.IsNullOrEmpty(state.devId)) return;
         if (string.IsNullOrEmpty(CurrentPrinterId) || state.devId != CurrentPrinterId) return;
 
@@ -238,7 +224,7 @@ public class PrinterUIHandler : MonoBehaviour
             initialized = true;
         }
 
-        // Update name label with the JSON name on every update if it changes
+        // Update name label (uses simplified logic)
         if (printerIdLabel != null)
         {
             printerIdLabel.text = GetBestAvailableName(state, CurrentPrinterId, fallbackGameObjectName);
@@ -271,7 +257,6 @@ public class PrinterUIHandler : MonoBehaviour
 
     private string nozzlePrefixSafe(double nozzle)
     {
-        // Ensure consistent formatting for nozzle text
         return nozzleTempPrefix + $"{nozzle:F1}°C";
     }
 
@@ -289,7 +274,7 @@ public class PrinterUIHandler : MonoBehaviour
         if (nozzleTempText != null) nozzleTempText.text = nozzleTempPrefix + "--";
         if (statusLight != null) statusLight.color = Color.gray;
         
-        if (printerIdLabel != null) printerIdLabel.text = "--"; // Ensure name is cleared
+        if (printerIdLabel != null) printerIdLabel.text = "--"; 
     }
 
     /// <summary>
@@ -306,7 +291,7 @@ public class PrinterUIHandler : MonoBehaviour
         if (nozzleTempText != null) nozzleTempText.text = nozzleTempPrefix + "--";
         if (statusLight != null) statusLight.color = Color.grey;
         
-        // Display fallback name or ID while loading
+        // Display fallback name or ID while loading (uses simplified logic)
         if (printerIdLabel != null) printerIdLabel.text = GetBestAvailableName(null, CurrentPrinterId, fallbackGameObjectName);
     }
 

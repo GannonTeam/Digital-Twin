@@ -106,7 +106,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.008720444, y: 0.011153338, z: 0.020009179}
+  m_Size: {x: 0.0075, y: 0.008, z: 0.018}
   m_Center: {x: 0.000020210175, y: 0.00034360503, z: -0.000019775325}
 --- !u!114 &564630238084298773
 MonoBehaviour:
@@ -135,6 +135,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Convai.Scripts.Runtime.Custom.ClickableDashboardToggle
   dashboardUI: {fileID: 0}
   clickAction: {fileID: 3001919216989983466, guid: 052faaac586de48259a63d0c4782560b, type: 3}
-  printerId: Bambu_P1S_A1
+  printerDevId: 
   toggleWhenSame: 0
   requestSingleOnShow: 1
