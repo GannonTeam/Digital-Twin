@@ -54,7 +54,7 @@ public class PrinterUIHandler : MonoBehaviour
     public bool showPrinterViaManagerOnSet = true;
 
     [Tooltip("When SetPrinterId is called, also call PrinterPollingClient.RequestSingle(id) if a poller exists.")]
-    public bool requestSingleOnSet = true;
+    public bool requestSingleOnSet = false;
 
     // internal state
     private PrinterState lastState;
@@ -125,14 +125,8 @@ public class PrinterUIHandler : MonoBehaviour
         // --- FIX FOR STACK OVERFLOW: Logic remains the same ---
         if (triggerRequest)
         {
-            if (requestSingleOnSet)
-            {
-                var poller = FindObjectOfType<PrinterPollingClient>();
-                if (poller != null)
-                {
-                    poller.RequestSingle(CurrentPrinterId);
-                }
-            }
+            // The logic to request a single printer is now handled by DashboardManager
+            // to avoid redundant requests.
         }
     }
     
@@ -153,7 +147,13 @@ public class PrinterUIHandler : MonoBehaviour
             return fallbackName;
         }
         
-        // Tier 2: Raw ID (Last resort if no GameObject name was provided for some reason)
+        // Tier 2: Meta Name from State (if available)
+        if (state != null && state.meta != null && !string.IsNullOrEmpty(state.meta.name))
+        {
+            return state.meta.name;
+        }
+
+        // Tier 3: Raw ID (Last resort)
         if (!string.IsNullOrEmpty(currentId))
         {
             return currentId;
@@ -232,12 +232,17 @@ public class PrinterUIHandler : MonoBehaviour
 
         // immediate text for status (readable)
         // Access nested state field
-        if (statusText != null) statusText.text = statusPrefix + ToTitleCaseSafe(state.reported.state);
+        if (state.reported.state.Equals("UNKNOWN") || state.reported.state.Equals("unknown"))
+        {
+            if (statusText != null) statusText.text = statusPrefix + ToTitleCaseSafe("Idle");
+            UpdateStatusLight("Idel");
+        }
+        else
+        {
+            if (statusText != null) statusText.text = statusPrefix + ToTitleCaseSafe(state.reported.state);
         
-        // Access nested state field
-        UpdateStatusLight(state.reported.state);
-
-        // numeric fields smoothed in Update()
+            UpdateStatusLight(state.reported.state);
+        } 
     }
 
     void Update()
@@ -300,6 +305,7 @@ public class PrinterUIHandler : MonoBehaviour
         if (statusLight == null) return;
 
         var color = Color.gray;
+        
         if (!string.IsNullOrEmpty(status))
         {
             switch (status.ToLowerInvariant())

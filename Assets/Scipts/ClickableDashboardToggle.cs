@@ -30,7 +30,7 @@ namespace Convai.Scripts.Runtime.Custom
         [SerializeField] private bool toggleWhenSame = false;
 
         [Tooltip("If true, when showing a printer the polling client will request single-printer endpoint (if supported).")]
-        [SerializeField] private bool requestSingleOnShow = true;
+        [SerializeField] private bool requestSingleOnShow = false;
 
         private Camera _mainCamera;
 
@@ -144,16 +144,6 @@ namespace Convai.Scripts.Runtime.Custom
             // FIX: ALWAYS call ShowPrinter() to bind/clear, even if idToShow is null/empty.
             // If idToShow is null/empty, ShowPrinter will tell the UI Handler to clear.
             mgr.ShowPrinter(idToShow, this.gameObject.name);
-
-            // ACTIVATED: Use RequestSingle for the fastest initial data fill (only if we have an ID).
-            if (!string.IsNullOrEmpty(idToShow) && requestSingleOnShow)
-            {
-                var poller = FindObjectOfType<PrinterPollingClient>();
-                if (poller != null)
-                {
-                    poller.RequestSingle(idToShow); 
-                }
-            }
         }
 
         /// <summary>

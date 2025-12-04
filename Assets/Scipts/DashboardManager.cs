@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using Newtonsoft.Json.Linq; // Added for JToken support
+using System.Linq; // Added for LINQ functionalities
 
 /// <summary>
 /// DashboardManager that caches latest PrinterState per printer,
@@ -24,6 +26,12 @@ public class DashboardManager : MonoBehaviour
     // Captured Unity synchronization context
     private static SynchronizationContext unitySyncContext;
 
+    // Reference to the SseClient for real-time updates
+    private SseClient _sseClient;
+
+    // Reference to the PrinterPollingClient for background data fetching
+    private PrinterPollingClient _pollingClient;
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -36,6 +44,25 @@ public class DashboardManager : MonoBehaviour
 
         // Capture the main thread's synchronization context
         unitySyncContext = SynchronizationContext.Current ?? new SynchronizationContext();
+
+        // Get SseClient reference
+        _sseClient = FindObjectOfType<SseClient>();
+        if (_sseClient == null)
+        {
+            Debug.LogWarning("DashboardManager: SseClient not found in scene. Real-time updates will not function.");
+        }
+        else
+        {
+            // Subscribe to SSE events
+            _sseClient.OnDiffPatchReceived += ReceiveDiffPatch;
+        }
+        
+        // Get PrinterPollingClient reference
+        _pollingClient = FindObjectOfType<PrinterPollingClient>();
+        if (_pollingClient == null)
+        {
+            Debug.LogWarning("DashboardManager: PrinterPollingClient not found in scene. Polling functions will not work.");
+        }
 
         // If activePanel assigned in inspector, ensure it's initially unbound.
         // Calls the original SetPrinterId(string) signature, which defaults the fallback name to null.
@@ -65,14 +92,44 @@ public class DashboardManager : MonoBehaviour
             unitySyncContext.Post(_ => BindActivePanelAndApplyState(fallbackName), null);
         }
 
+        // --- SSE Connection Logic ---
+        if (!string.IsNullOrEmpty(activePrinterId) && _sseClient != null)
+        {
+            _sseClient.StartSseConnection(activePrinterId);
+        }
+        else if (string.IsNullOrEmpty(activePrinterId) && _sseClient != null)
+        {
+            _sseClient.StopSseConnection();
+        }
+        // --- End SSE Connection Logic ---
+
+        // --- Polling Client Logic ---
+        if (_pollingClient != null)
+        {
+            if (!string.IsNullOrEmpty(activePrinterId))
+            {
+                // If a specific printer is active, stop the general polling
+                _pollingClient.StopPolling();
+            }
+            else
+            {
+                // If no specific printer is active, resume general polling (if it was set to start on awake)
+                if (_pollingClient.startOnAwake)
+                {
+                    _pollingClient.StartPolling();
+                }
+            }
+        }
+        // --- End Polling Client Logic ---
+
         // Optionally, attempt to fetch initial state from server if cache is absent
         if (!string.IsNullOrEmpty(activePrinterId) && !latestStates.ContainsKey(activePrinterId))
         {
-            var poller = FindObjectOfType<PrinterPollingClient>();
-            if (poller != null)
+            // Use the stored _pollingClient reference
+            if (_pollingClient != null)
             {
                 // OPTIMIZATION: Request the specific printer's data to ensure we get the latest detailed JSON.
-                poller.RequestSingle(activePrinterId); 
+                _pollingClient.RequestSingle(activePrinterId); 
             }
         }
     }
@@ -134,6 +191,98 @@ public class DashboardManager : MonoBehaviour
         else
         {
             unitySyncContext.Post(_ => ReceivePrinterStates(new PrinterState[] { state }), null);
+        }
+    }
+    
+    /// <summary>
+    /// Thread-safe: Applies a DiffPatch to an existing PrinterState.
+    /// </summary>
+    /// <param name="devId">The ID of the printer to update.</param>
+    /// <param name="diffPatchFields">A dictionary of fields with dot-notation keys (e.g., "reported.state") and their new values as JTokens.</param>
+    public void ReceiveDiffPatch(string devId, Dictionary<string, JToken> diffPatchFields)
+    {
+        if (string.IsNullOrEmpty(devId) || diffPatchFields == null || diffPatchFields.Count == 0) return;
+
+        unitySyncContext.Post(_ =>
+        {
+            if (latestStates.TryGetValue(devId, out PrinterState existingState))
+            {
+                // Apply the patch to the existing state
+                ApplyDiffPatchToState(existingState, diffPatchFields);
+                
+                // If this is the active printer, update the UI
+                if (!string.IsNullOrEmpty(activePrinterId) && devId == activePrinterId && activePanel != null)
+                {
+                    activePanel.DisplayState(existingState);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"DashboardManager: Received DiffPatch for unknown printer {devId}. Ignoring.");
+                // OPTIONAL: If a DiffPatch arrives for an unknown printer, one might trigger a full fetch for it.
+                // var poller = FindObjectOfType<PrinterPollingClient>();
+                // poller?.RequestSingle(devId);
+            }
+        }, null);
+    }
+
+    /// <summary>
+    /// Applies the diff patch fields to the target PrinterState object.
+    /// Handles dot-notation keys for nested properties.
+    /// </summary>
+    private void ApplyDiffPatchToState(PrinterState targetState, Dictionary<string, JToken> diffPatchFields)
+    {
+        foreach (var entry in diffPatchFields)
+        {
+            string key = entry.Key;
+            JToken value = entry.Value;
+
+            if (key.StartsWith("reported."))
+            {
+                string reportedField = key.Substring("reported.".Length);
+                switch (reportedField)
+                {
+                    case "state":
+                        targetState.reported.state = value.ToObject<string>();
+                        break;
+                    case "progress_pct":
+                        targetState.reported.progressPct = value.ToObject<double>();
+                        break;
+                    case "nozzle_c":
+                        targetState.reported.nozzleC = value.ToObject<double>();
+                        break;
+                    case "bed_c":
+                        targetState.reported.bedC = value.ToObject<double>();
+                        break;
+                    // Add more reported fields here as needed
+                    default:
+                        Debug.LogWarning($"DashboardManager: Unhandled reported field in DiffPatch: {key}");
+                        break;
+                }
+            }
+            else if (key.StartsWith("meta."))
+            {
+                string metaField = key.Substring("meta.".Length);
+                switch (metaField)
+                {
+                    case "name":
+                        targetState.meta.name = value.ToObject<string>();
+                        break;
+                    // Add more meta fields here as needed
+                    default:
+                        Debug.LogWarning($"DashboardManager: Unhandled meta field in DiffPatch: {key}");
+                        break;
+                }
+            }
+            else if (key == "devId")
+            {
+                // devId should ideally not change in a diff patch, but if it does, handle it
+                targetState.devId = value.ToObject<string>();
+            }
+            else
+            {
+                Debug.LogWarning($"DashboardManager: Unhandled top-level field in DiffPatch: {key}");
+            }
         }
     }
 
@@ -207,5 +356,11 @@ public class DashboardManager : MonoBehaviour
     void OnDestroy()
     {
         if (Instance == this) Instance = null;
+
+        if (_sseClient != null)
+        {
+            _sseClient.OnDiffPatchReceived -= ReceiveDiffPatch;
+            _sseClient.StopSseConnection(); // Ensure SSE connection is closed when DashboardManager is destroyed
+        }
     }
 }

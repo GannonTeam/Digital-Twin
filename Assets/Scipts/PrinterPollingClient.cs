@@ -15,12 +15,14 @@ public class PrinterPollingClient : MonoBehaviour
     private const string BackendBaseUrl = "https://digitwinbackend.quangphuly.online";
     private const string ListEndpointPath = "/twin/printers"; 
     private const string PerIdEndpointFormat = "/twin/printers/{id}";
-    private const float DefaultPollInterval = 0.5f;
     // ---------------------------------------
 
     [Header("Polling")]
     [Tooltip("If true, polling will start automatically on Start().")]
-    public bool startOnAwake = true;
+    public bool startOnAwake = false;
+    
+    [Tooltip("Interval in seconds for polling the backend for printer status.")]
+    public float pollInterval = 30f;
     
     // We keep these public as they relate to authorization and custom headers,
     // which might need dynamic assignment or testing.
@@ -119,7 +121,7 @@ public class PrinterPollingClient : MonoBehaviour
         while (true)
         {
             yield return DoRequestAndDeliver(url);
-            yield return new WaitForSeconds(DefaultPollInterval); // Uses the hardcoded interval
+            yield return new WaitForSeconds(pollInterval); // Uses the configurable interval
         }
     }
 
