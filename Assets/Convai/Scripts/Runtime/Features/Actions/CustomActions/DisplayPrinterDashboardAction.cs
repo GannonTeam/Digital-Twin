@@ -39,7 +39,7 @@ namespace Convai.Scripts.Runtime.Features.Actions.CustomActions
                 yield break;
             }
             
-            string printerId = toggleComponent.PrinterId;
+            string printerId = toggleComponent.PrinterDevId;
 
             ConvaiLogger.DebugLog($"[{ActionName}] Step 2: Component found. Calling OpenDashboard(ID: {printerId}).", ConvaiLogger.LogCategory.Actions);
             

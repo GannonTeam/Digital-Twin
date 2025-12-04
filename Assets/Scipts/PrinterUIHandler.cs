@@ -2,12 +2,12 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Globalization;
-using System; // Added for exception handling
+using System; 
 
 /// <summary>
 /// Printer UI handler for the single-panel dashboard.
 /// - Supports binding to a printer id at runtime via SetPrinterId(...).
-/// - Displays the bound printer id in a TextMeshProUGUI (printerIdLabel) and optionally lets the user edit it via a TMP_InputField (printerIdInput).
+/// - Displays the JSON Name > GameObject Name > devId (Three-Tier Fallback).
 /// - When an id is set it can ask DashboardManager to show that printer and optionally ask the PollingClient to RequestSingle immediately.
 /// - Smooths numeric values and shows labeled fields (Status: Running, Progress: 23.5%, etc.)
 /// </summary>
@@ -63,6 +63,9 @@ public class PrinterUIHandler : MonoBehaviour
     private float displayedBed;
     private bool initialized;
 
+    // Stores the name of the GameObject that triggered this panel open (Tier 2 Fallback)
+    private string fallbackGameObjectName = string.Empty; 
+
     // the current bound printer id (empty if unbound)
     public string CurrentPrinterId { get; private set; } = string.Empty;
 
@@ -90,19 +93,20 @@ public class PrinterUIHandler : MonoBehaviour
     }
 
     /// <summary>
-    /// Bind the panel to a printer id. If initialState is provided the panel will display it immediately.
-    /// Pass null/empty to unbind and clear the UI.
-    /// If triggerRequest is true the manager/poller will be asked to fetch the printer state.
+    /// Binds the panel to a printer id and sets a fallback name.
+    /// NOTE: This is the updated method signature requiring the gameObjectName fallback.
     /// </summary>
-    public void SetPrinterId(string printerId, PrinterState initialState = null, bool triggerRequest = true)
+    public void SetPrinterId(string printerId, string gameObjectName, PrinterState initialState = null, bool triggerRequest = true)
     {
         CurrentPrinterId = printerId ?? string.Empty;
+        fallbackGameObjectName = gameObjectName ?? string.Empty; // Store the fallback name
         lastState = null;
         initialized = false;
 
-        // update visible id controls
+        // Set label initially using the best available name (for immediate feedback)
+        string initialLabel = GetBestAvailableName(initialState, CurrentPrinterId, fallbackGameObjectName);
         if (printerIdLabel != null)
-            printerIdLabel.text = string.IsNullOrEmpty(CurrentPrinterId) ? "--" : CurrentPrinterId;
+            printerIdLabel.text = initialLabel;
 
         if (printerIdInput != null && printerIdInput.text != CurrentPrinterId)
             printerIdInput.text = CurrentPrinterId;
@@ -122,13 +126,9 @@ public class PrinterUIHandler : MonoBehaviour
             ClearDisplayAsLoading();
         }
 
-        // --- FIX FOR STACK OVERFLOW: Remove the recursive call to DashboardManager.ShowPrinter ---
+        // --- FIX FOR STACK OVERFLOW: Logic remains the same ---
         if (triggerRequest)
         {
-            // If the manager calls SetPrinterId to bind the panel, we must NOT call DashboardManager.ShowPrinter back.
-            // We rely on the external caller (ClickableToggle or Convai Action) to have called ShowPrinter already.
-
-            // Only keep the PollingClient request, as that does not cause the infinite recursion loop.
             if (requestSingleOnSet)
             {
                 var poller = FindObjectOfType<PrinterPollingClient>();
@@ -138,7 +138,40 @@ public class PrinterUIHandler : MonoBehaviour
                 }
             }
         }
-        // --- END FIX ---
+    }
+    
+    // Original SetPrinterId wrapper (to maintain compatibility if called without gameObjectName)
+    public void SetPrinterId(string printerId, PrinterState initialState = null, bool triggerRequest = true)
+    {
+        // Fallback to null name if called without it.
+        SetPrinterId(printerId, null, initialState, triggerRequest);
+    }
+
+    /// <summary>
+    /// Helper to determine the best display name based on available data.
+    /// </summary>
+    private string GetBestAvailableName(PrinterState state, string currentId, string fallbackName)
+    {
+        // Tier 1: JSON Name (from state data, nested under meta)
+        // Note: state.meta must be checked for null reference if the JSON might not contain meta at all.
+        if (state != null && state.meta != null && !string.IsNullOrEmpty(state.meta.name))
+        {
+            return state.meta.name;
+        }
+
+        // Tier 2: GameObject Fallback Name (Name of the object that was clicked)
+        if (!string.IsNullOrEmpty(fallbackName))
+        {
+            return fallbackName;
+        }
+
+        // Tier 3: Raw ID (Last resort)
+        if (!string.IsNullOrEmpty(currentId))
+        {
+            return currentId;
+        }
+
+        return "--";
     }
 
     /// <summary>
@@ -159,19 +192,29 @@ public class PrinterUIHandler : MonoBehaviour
     private void ApplyInitialState(PrinterState s)
     {
         lastState = s;
-        displayedProgress = (float)s.Progress;
-        displayedNozzle = (float)s.NozzleTemp;
-        displayedBed = (float)s.BedTemp;
+        // Access nested fields via 'reported'
+        displayedProgress = (float)s.reported.progressPct;
+        displayedNozzle = (float)s.reported.nozzleC;
+        displayedBed = (float)s.reported.bedC;
         initialized = true;
 
+        // Apply best name now that state data is available
+        if (printerIdLabel != null)
+        {
+            printerIdLabel.text = GetBestAvailableName(s, CurrentPrinterId, fallbackGameObjectName);
+        }
+
         // update immediate labeled texts
-        if (statusText != null) statusText.text = statusPrefix + ToTitleCaseSafe(s.Status);
+        // Access nested state field
+        if (statusText != null) statusText.text = statusPrefix + ToTitleCaseSafe(s.reported.state);
+        
         if (progressText != null) progressText.text = progressPrefix + $"{displayedProgress:F1}%";
         if (progressSlider != null) progressSlider.value = Mathf.Clamp01(displayedProgress / 100f);
         if (bedTempText != null) bedTempText.text = bedTempPrefix + $"{displayedBed:F1}°C";
-        if (nozzleTempText != null) nozzleTempText.text = nozzleTempPrefix + $"{displayedBed:F1}°C"; // FIX: used displayedBed instead of displayedNozzle
-        
-        UpdateStatusLight(s.Status);
+        if (nozzleTempText != null) nozzleTempText.text = nozzleTempPrefix + $"{displayedNozzle:F1}°C"; 
+
+        // Access nested state field
+        UpdateStatusLight(s.reported.state);
     }
 
     /// <summary>
@@ -180,22 +223,33 @@ public class PrinterUIHandler : MonoBehaviour
     /// </summary>
     public void DisplayState(PrinterState state)
     {
-        if (state == null || string.IsNullOrEmpty(state.PrinterId)) return;
-        if (string.IsNullOrEmpty(CurrentPrinterId) || state.PrinterId != CurrentPrinterId) return;
+        // NOTE: Comparing CurrentPrinterId to state.devId, as devId is the identifier from the JSON
+        if (state == null || string.IsNullOrEmpty(state.devId)) return;
+        if (string.IsNullOrEmpty(CurrentPrinterId) || state.devId != CurrentPrinterId) return;
 
         lastState = state;
 
         if (!initialized)
         {
-            displayedProgress = (float)state.Progress;
-            displayedNozzle = (float)state.NozzleTemp;
-            displayedBed = (float)state.BedTemp;
+            // Access nested fields via 'reported'
+            displayedProgress = (float)state.reported.progressPct;
+            displayedNozzle = (float)state.reported.nozzleC;
+            displayedBed = (float)state.reported.bedC;
             initialized = true;
         }
 
+        // Update name label with the JSON name on every update if it changes
+        if (printerIdLabel != null)
+        {
+            printerIdLabel.text = GetBestAvailableName(state, CurrentPrinterId, fallbackGameObjectName);
+        }
+
         // immediate text for status (readable)
-        if (statusText != null) statusText.text = statusPrefix + ToTitleCaseSafe(state.Status);
-        UpdateStatusLight(state.Status);
+        // Access nested state field
+        if (statusText != null) statusText.text = statusPrefix + ToTitleCaseSafe(state.reported.state);
+        
+        // Access nested state field
+        UpdateStatusLight(state.reported.state);
 
         // numeric fields smoothed in Update()
     }
@@ -204,9 +258,10 @@ public class PrinterUIHandler : MonoBehaviour
     {
         if (lastState == null || !initialized) return;
 
-        displayedProgress = Mathf.Lerp(displayedProgress, (float)lastState.Progress, Time.deltaTime * progressLerp);
-        displayedNozzle = Mathf.Lerp(displayedNozzle, (float)lastState.NozzleTemp, Time.deltaTime * tempLerp);
-        displayedBed = Mathf.Lerp(displayedBed, (float)lastState.BedTemp, Time.deltaTime * tempLerp);
+        // Access nested fields via 'reported'
+        displayedProgress = Mathf.Lerp(displayedProgress, (float)lastState.reported.progressPct, Time.deltaTime * progressLerp);
+        displayedNozzle = Mathf.Lerp(displayedNozzle, (float)lastState.reported.nozzleC, Time.deltaTime * tempLerp);
+        displayedBed = Mathf.Lerp(displayedBed, (float)lastState.reported.bedC, Time.deltaTime * tempLerp);
 
         if (progressText != null) progressText.text = progressPrefix + $"{displayedProgress:F1}%";
         if (progressSlider != null) progressSlider.value = Mathf.Clamp01(displayedProgress / 100f);
@@ -233,6 +288,8 @@ public class PrinterUIHandler : MonoBehaviour
         if (bedTempText != null) bedTempText.text = bedTempPrefix + "--";
         if (nozzleTempText != null) nozzleTempText.text = nozzleTempPrefix + "--";
         if (statusLight != null) statusLight.color = Color.gray;
+        
+        if (printerIdLabel != null) printerIdLabel.text = "--"; // Ensure name is cleared
     }
 
     /// <summary>
@@ -248,6 +305,9 @@ public class PrinterUIHandler : MonoBehaviour
         if (bedTempText != null) bedTempText.text = bedTempPrefix + "--";
         if (nozzleTempText != null) nozzleTempText.text = nozzleTempPrefix + "--";
         if (statusLight != null) statusLight.color = Color.grey;
+        
+        // Display fallback name or ID while loading
+        if (printerIdLabel != null) printerIdLabel.text = GetBestAvailableName(null, CurrentPrinterId, fallbackGameObjectName);
     }
 
     private void UpdateStatusLight(string status)
@@ -287,7 +347,6 @@ public class PrinterUIHandler : MonoBehaviour
         statusLight.color = color;
     }
 
-    // Made public static to be accessible from ShowPrinterDashboardAction.cs
     public static string ToTitleCaseSafe(string s)
     {
         if (string.IsNullOrEmpty(s)) return s ?? string.Empty;
@@ -295,7 +354,7 @@ public class PrinterUIHandler : MonoBehaviour
         {
             return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(s.ToLowerInvariant());
         }
-        catch (Exception ex) // Added exception type for better practice
+        catch (Exception ex)
         {
             Debug.LogError($"Error in ToTitleCaseSafe: {ex.Message}");
             return s;

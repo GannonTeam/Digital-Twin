@@ -12,10 +12,9 @@ public class DashboardManager : MonoBehaviour
 {
     public static DashboardManager Instance { get; private set; }
 
-    // Cache of latest states by PrinterId
+    // Cache of latest states by devId (the new identifier from JSON)
     private readonly Dictionary<string, PrinterState> latestStates = new Dictionary<string, PrinterState>();
 
-    // The active single UI panel (the panel that's shown when user opens the dashboard)
     [Tooltip("Assign the single UI panel used to show any printer. Can be left empty and assigned at runtime.")]
     public PrinterUIHandler activePanel;
 
@@ -35,51 +34,66 @@ public class DashboardManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(this.gameObject);
 
+        // Capture the main thread's synchronization context
         unitySyncContext = SynchronizationContext.Current ?? new SynchronizationContext();
 
-        // If activePanel assigned in inspector, ensure it's initially unbound
+        // If activePanel assigned in inspector, ensure it's initially unbound.
+        // Calls the original SetPrinterId(string) signature, which defaults the fallback name to null.
         if (activePanel != null) activePanel.SetPrinterId(string.Empty);
     }
 
-    #region Public API
+    // --- Public API ---
 
     /// <summary>
     /// Bind the single panel to show this printerId. If a cached state exists it will be displayed immediately.
     /// Call with null/empty to unbind/hide.
     /// </summary>
-    public void ShowPrinter(string printerId)
+    // MODIFIED: Added gameObjectName parameter to accept the fallback name from the click handler.
+    public void ShowPrinter(string printerId, string gameObjectName)
     {
         activePrinterId = printerId ?? string.Empty;
+        string fallbackName = gameObjectName ?? string.Empty; // Store the fallback name locally for the binding call
 
         // Ensure UI updates happen on main thread
         if (SynchronizationContext.Current == unitySyncContext)
         {
-            BindActivePanelAndApplyState();
+            BindActivePanelAndApplyState(fallbackName);
         }
         else
         {
-            unitySyncContext.Post(_ => BindActivePanelAndApplyState(), null);
+            // Pass the fallback name via the state object to BindActivePanelAndApplyState
+            unitySyncContext.Post(_ => BindActivePanelAndApplyState(fallbackName), null);
         }
 
         // Optionally, attempt to fetch initial state from server if cache is absent
         if (!string.IsNullOrEmpty(activePrinterId) && !latestStates.ContainsKey(activePrinterId))
         {
-            // If your Polling client supports per-id requests, call it here.
-            // Otherwise, request a full poll once so cache populates:
             var poller = FindObjectOfType<PrinterPollingClient>();
             if (poller != null)
             {
-                poller.RequestOnce(); // will update cache when response arrives
+                // OPTIMIZATION: Request the specific printer's data to ensure we get the latest detailed JSON.
+                poller.RequestSingle(activePrinterId); 
             }
         }
     }
+    
+    /// <summary>
+    /// OVERLOAD: Maintains compatibility for internal calls that don't have the GameObject name.
+    /// </summary>
+    public void ShowPrinter(string printerId)
+    {
+        // When called without a gameObjectName, pass a null string to the main handler.
+        ShowPrinter(printerId, null);
+    }
+
 
     /// <summary>
     /// Unbind the active panel (hide or clear).
     /// </summary>
     public void ClearActivePanel()
     {
-        ShowPrinter(string.Empty);
+        // Calls the new ShowPrinter(string, string) overload
+        ShowPrinter(string.Empty, null); 
     }
 
     /// <summary>
@@ -94,6 +108,7 @@ public class DashboardManager : MonoBehaviour
         {
             try
             {
+                // JsonHelper handles both single object and array JSON.
                 var arr = JsonHelper.FromJson<PrinterState>(json);
                 ReceivePrinterStates(arr);
             }
@@ -109,7 +124,8 @@ public class DashboardManager : MonoBehaviour
     /// </summary>
     public void ReceivePrinterState(PrinterState state)
     {
-        if (state == null || string.IsNullOrEmpty(state.PrinterId)) return;
+        // Check for the new ID field 'devId'
+        if (state == null || string.IsNullOrEmpty(state.devId)) return;
 
         if (SynchronizationContext.Current == unitySyncContext)
         {
@@ -121,7 +137,7 @@ public class DashboardManager : MonoBehaviour
         }
     }
 
-    #endregion
+    // --- Internal Methods (Must run on main thread) ---
 
     /// <summary>
     /// Must run on main thread.
@@ -133,13 +149,15 @@ public class DashboardManager : MonoBehaviour
 
         foreach (var s in states)
         {
-            if (s == null || string.IsNullOrEmpty(s.PrinterId)) continue;
+            // Use 's.devId' for identification
+            if (s == null || string.IsNullOrEmpty(s.devId)) continue;
 
-            // update cache
-            latestStates[s.PrinterId] = s;
+            // update cache: key is now 's.devId'
+            latestStates[s.devId] = s;
 
             // if the active panel is showing this printer, update it immediately
-            if (!string.IsNullOrEmpty(activePrinterId) && s.PrinterId == activePrinterId && activePanel != null)
+            // Compare 's.devId' with the active ID
+            if (!string.IsNullOrEmpty(activePrinterId) && s.devId == activePrinterId && activePanel != null)
             {
                 activePanel.DisplayState(s);
             }
@@ -149,23 +167,34 @@ public class DashboardManager : MonoBehaviour
     /// <summary>
     /// Helper called on main thread to bind panel and apply cached state (if any).
     /// </summary>
-    private void BindActivePanelAndApplyState()
+    // MODIFIED: Accepts the fallback name from ShowPrinter
+    private void BindActivePanelAndApplyState(string fallbackName)
     {
         if (activePanel == null) return;
 
         if (string.IsNullOrEmpty(activePrinterId))
         {
-            // unbind
-            activePanel.SetPrinterId(string.Empty);
+            // FIX: When clearing, call the SetPrinterId(ID, Name, State) signature
+            // to ensure the name fallback is still applied for the clear state.
+            activePanel.SetPrinterId(string.Empty, fallbackName, null); 
             return;
         }
 
         // If we have a cached state for this printer, pass it as initial state
         latestStates.TryGetValue(activePrinterId, out var cached);
-        activePanel.SetPrinterId(activePrinterId, cached);
+    
+        // Calls the new SetPrinterId(string, string, PrinterState) overload
+        activePanel.SetPrinterId(activePrinterId, fallbackName, cached);
+    }
+    
+    // OVERLOAD for internal calls that don't need to pass the name (e.g., from Post)
+    private void BindActivePanelAndApplyState()
+    {
+        BindActivePanelAndApplyState(null);
     }
 
-    #region Utilities
+
+    // --- Utilities ---
 
     /// <summary>
     /// Read-only access (optional) to the latest cache for external UI or debugging.
@@ -174,8 +203,6 @@ public class DashboardManager : MonoBehaviour
     {
         return latestStates.TryGetValue(printerId, out state);
     }
-
-    #endregion
 
     void OnDestroy()
     {

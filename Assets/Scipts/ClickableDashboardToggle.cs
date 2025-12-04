@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Convai.Scripts.Runtime.Core; // Added if necessary for global components
+// You may keep or remove the Convai using statement based on your project's needs.
+// using Convai.Scripts.Runtime.Core; 
 
 namespace Convai.Scripts.Runtime.Custom
 {
@@ -21,8 +22,8 @@ namespace Convai.Scripts.Runtime.Custom
         [SerializeField] private InputActionReference clickAction;
 
         [Header("Printer mapping")]
-        [Tooltip("Must match the backend PrinterId for this machine.")]
-        [SerializeField] private string printerId = "";
+        [Tooltip("Must match the backend devId for this machine.")]
+        [SerializeField] private string printerDevId = ""; // MODIFIED: Renamed field to align with backend JSON
 
         [Header("Behavior")]
         [Tooltip("If true, clicking the same machine when dashboard is open will close it (toggle).")]
@@ -81,17 +82,18 @@ namespace Convai.Scripts.Runtime.Custom
             var ray = _mainCamera.ScreenPointToRay(mousePos);
             if (Physics.Raycast(ray, out var hit) && hit.collider == GetComponent<Collider>())
             {
-                // If no printer id configured, warn and open UI but do not call manager
-                if (string.IsNullOrEmpty(printerId))
+                // Check against the new devId field
+                if (string.IsNullOrEmpty(printerDevId))
                 {
-                    Debug.LogWarning($"ClickableDashboardToggle on {gameObject.name} has no PrinterId configured. Opening dashboard without selecting a printer.");
+                    Debug.LogWarning($"ClickableDashboardToggle on {gameObject.name} has no PrinterDevId configured. Opening dashboard without selecting a printer.");
                     OpenDashboard(null);
                     return;
                 }
 
                 // If toggle is enabled and dashboard already showing this printer, close it
                 var mgr = DashboardManager.Instance;
-                bool currentlyShowingThis = mgr != null && IsDashboardShowingPrinter(printerId);
+                // Use the new devId field
+                bool currentlyShowingThis = mgr != null && IsDashboardShowingPrinter(printerDevId); 
 
                 if (toggleWhenSame && currentlyShowingThis)
                 {
@@ -99,7 +101,8 @@ namespace Convai.Scripts.Runtime.Custom
                 }
                 else
                 {
-                    OpenDashboard(printerId);
+                    // Pass the new devId field
+                    OpenDashboard(printerDevId);
                 }
             }
         }
@@ -109,47 +112,46 @@ namespace Convai.Scripts.Runtime.Custom
         /// </summary>
         public void OpenDashboard(string idToShow)
         {
-            Debug.Log($"[DASHBOARD DEBUG] OpenDashboard called for ID: {idToShow}."); // <-- LOG 1: Method entered
+            Debug.Log($"[DASHBOARD DEBUG] OpenDashboard called for ID: {idToShow}."); 
 
             if (dashboardUI == null)
             {
-                Debug.LogError("[DASHBOARD DEBUG] ERROR: dashboardUI reference is NULL in the Inspector. Cannot open."); // <-- LOG 2: CRITICAL FAILURE CHECK
+                Debug.LogError("[DASHBOARD DEBUG] ERROR: dashboardUI reference is NULL in the Inspector. Cannot open.");
                 return;
             }
 
+            // --- UI Activation Logic ---
             if (!dashboardUI.activeSelf)
             {
-                Debug.Log("[DASHBOARD DEBUG] Activating dashboardUI now."); // <-- LOG 3: Activation SUCCESS signal
+                Debug.Log("[DASHBOARD DEBUG] Activating dashboardUI now.");
                 dashboardUI.SetActive(true);
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
             else
             {
-                Debug.Log("[DASHBOARD DEBUG] dashboardUI is ALREADY ACTIVE. Proceeding to bind."); // <-- LOG 4: Already open
+                Debug.Log("[DASHBOARD DEBUG] dashboardUI is ALREADY ACTIVE. Proceeding to bind/clear.");
+            }
+            // --------------------------
+
+            var mgr = DashboardManager.Instance;
+            if (mgr == null)
+            {
+                Debug.LogError("ClickableDashboardToggle: DashboardManager.Instance is null. Ensure DashboardManager exists in the scene.");
+                return;
             }
 
-            if (!string.IsNullOrEmpty(idToShow))
+            // FIX: ALWAYS call ShowPrinter() to bind/clear, even if idToShow is null/empty.
+            // If idToShow is null/empty, ShowPrinter will tell the UI Handler to clear.
+            mgr.ShowPrinter(idToShow, this.gameObject.name);
+
+            // ACTIVATED: Use RequestSingle for the fastest initial data fill (only if we have an ID).
+            if (!string.IsNullOrEmpty(idToShow) && requestSingleOnShow)
             {
-                var mgr = DashboardManager.Instance;
-                if (mgr == null)
+                var poller = FindObjectOfType<PrinterPollingClient>();
+                if (poller != null)
                 {
-                    Debug.LogError("ClickableDashboardToggle: DashboardManager.Instance is null. Ensure DashboardManager exists in the scene.");
-                    return;
-                }
-
-                // Ask DashboardManager to show the printer; DashboardManager handles caching and requesting data.
-                mgr.ShowPrinter(idToShow);
-
-                // Optionally trigger a per-id request in the polling client for fastest initial fill:
-                if (requestSingleOnShow)
-                {
-                    var poller = FindObjectOfType<PrinterPollingClient>();
-                    if (poller != null)
-                    {
-                        // Assuming PrinterPollingClient.RequestSingle exists
-                        // poller.RequestSingle(idToShow);
-                    }
+                    poller.RequestSingle(idToShow); 
                 }
             }
         }
@@ -172,20 +174,16 @@ namespace Convai.Scripts.Runtime.Custom
             // DashboardManager.Instance?.ClearActivePanel();
         }
 
-        private bool IsDashboardShowingPrinter(string id)
+        private bool IsDashboardShowingPrinter(string devId) // Parameter name changed for clarity
         {
-            // Since activePrinterId is private inside DashboardManager, we detect by comparing cached state or latest displayed:
-            // Try to read cached state and see if the active panel is bound to that id:
-            // We can check the activePanel property if you expose it, but to keep coupling minimal:
-            // We'll compare the cached latest state for the id and whether dashboard UI is active.
             if (!dashboardUI.activeSelf) return false;
 
             if (DashboardManager.Instance == null) return false;
 
-            if (DashboardManager.Instance.TryGetLatestState(id, out var cached))
+            // Use the TryGetLatestState method which uses devId as the key
+            if (DashboardManager.Instance.TryGetLatestState(devId, out var cached))
             {
                 // If there's a cached state for this id, assume it's what would be shown.
-                // This is conservative; DashboardManager.ShowPrinter is the single source of truth.
                 return true;
             }
 
@@ -194,12 +192,12 @@ namespace Convai.Scripts.Runtime.Custom
         }
 
         /// <summary>
-        /// Expose PrinterId for inspector or runtime changes.
+        /// Expose PrinterDevId for inspector or runtime changes.
         /// </summary>
-        public string PrinterId
+        public string PrinterDevId // Property name changed
         {
-            get => printerId;
-            set => printerId = value;
+            get => printerDevId;
+            set => printerDevId = value;
         }
     }
 }

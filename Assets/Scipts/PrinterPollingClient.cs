@@ -11,23 +11,19 @@ using System;
 /// </summary>
 public class PrinterPollingClient : MonoBehaviour
 {
-    [Header("Backend")]
-    [Tooltip("Base URL, e.g. https://digitwinbackend.quangphuly.online")]
-    public string backendBaseUrl = "https://digitwinbackend.quangphuly.online";
-
-    [Tooltip("Endpoint path for full list, e.g. /api/printers")]
-    public string endpointPath = "/api/printers";
-
-    [Tooltip("Optional format for per-printer endpoint. Use {id} where the printer id should go. Example: /api/printers/{id}")]
-    public string perIdEndpointFormat = ""; // leave empty to use endpointPath + "/{id}"
+    // --- Hardcoded Backend Configuration ---
+    private const string BackendBaseUrl = "https://digitwinbackend.quangphuly.online";
+    private const string ListEndpointPath = "/twin/printers"; 
+    private const string PerIdEndpointFormat = "/twin/printers/{id}";
+    private const float DefaultPollInterval = 0.5f;
+    // ---------------------------------------
 
     [Header("Polling")]
-    [Tooltip("Seconds between successful polls.")]
-    public float pollInterval = 0.5f;
-
     [Tooltip("If true, polling will start automatically on Start().")]
     public bool startOnAwake = true;
-
+    
+    // We keep these public as they relate to authorization and custom headers,
+    // which might need dynamic assignment or testing.
     [Header("Auth / Headers")]
     [Tooltip("Optional bearer token for Authorization header.")]
     public string bearerToken = "";
@@ -54,9 +50,16 @@ public class PrinterPollingClient : MonoBehaviour
     /// </summary>
     public void StartPolling()
     {
+        // Add a check to prevent errors if DashboardManager hasn't initialized yet
+        if (DashboardManager.Instance == null)
+        {
+             Debug.LogError("DashboardManager not initialized. Cannot start polling.");
+             return;
+        }
+
         if (isPolling) return;
         pollCoroutine = StartCoroutine(PollLoop());
-        Debug.Log("PrinterPollingClient: Started polling " + CombineUrl(backendBaseUrl, endpointPath));
+        Debug.Log("PrinterPollingClient: Started polling " + CombineUrl(BackendBaseUrl, ListEndpointPath));
     }
 
     /// <summary>
@@ -80,13 +83,12 @@ public class PrinterPollingClient : MonoBehaviour
 
     private IEnumerator RequestOnceCoroutine()
     {
-        yield return DoRequestAndDeliver(CombineUrl(backendBaseUrl, endpointPath));
+        // Uses the hardcoded ListEndpointPath
+        yield return DoRequestAndDeliver(CombineUrl(BackendBaseUrl, ListEndpointPath));
     }
 
     /// <summary>
-    /// Request a single printer's state. Uses perIdEndpointFormat if provided, otherwise appends "/{printerId}" to endpointPath.
-    /// Starts an independent coroutine to fetch the single resource and deliver it to DashboardManager.
-    /// If your backend does not support per-id GET, do not call this (DashboardManager will request full list via RequestOnce()).
+    /// Request a single printer's state.
     /// </summary>
     public void RequestSingle(string printerId)
     {
@@ -103,37 +105,30 @@ public class PrinterPollingClient : MonoBehaviour
             encodedId = printerId; // fallback
         }
 
-        string path;
-        if (!string.IsNullOrEmpty(perIdEndpointFormat))
-        {
-            path = perIdEndpointFormat.Replace("{id}", encodedId);
-        }
-        else
-        {
-            // ensure we don't double slash
-            string basePath = endpointPath;
-            if (basePath.EndsWith("/")) basePath = basePath.TrimEnd('/');
-            path = basePath + "/" + encodedId;
-        }
-
-        string url = CombineUrl(backendBaseUrl, path);
+        // Uses the hardcoded PerIdEndpointFormat
+        string path = PerIdEndpointFormat.Replace("{id}", encodedId);
+        
+        string url = CombineUrl(BackendBaseUrl, path);
         StartCoroutine(DoRequestAndDeliver(url));
     }
 
     private IEnumerator PollLoop()
     {
-        string url = CombineUrl(backendBaseUrl, endpointPath);
+        string url = CombineUrl(BackendBaseUrl, ListEndpointPath);
 
         while (true)
         {
-            yield return DoRequestAndDeliver(url).WrapWithUnityCoroutine();
-            yield return new WaitForSeconds(pollInterval);
+            yield return DoRequestAndDeliver(url);
+            yield return new WaitForSeconds(DefaultPollInterval); // Uses the hardcoded interval
         }
     }
 
     // Helper to actually perform the HTTP GET and deliver the JSON to DashboardManager.
     private IEnumerator DoRequestAndDeliver(string url)
     {
+        // LOG 1: Show the URL being requested
+        Debug.Log($"[POLL REQUEST] Sending GET to: {url}");
+        
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             www.SetRequestHeader("Accept", "application/json");
@@ -168,6 +163,10 @@ public class PrinterPollingClient : MonoBehaviour
             else
             {
                 string json = www.downloadHandler.text;
+                
+                // LOG 2: Show the raw data received on success
+                Debug.Log($"[POLL RESPONSE] URL: {url}\nRaw Data: {json}");
+
                 if (string.IsNullOrEmpty(json))
                 {
                     Debug.LogWarning("PrinterPollingClient: empty JSON response.");
@@ -176,19 +175,20 @@ public class PrinterPollingClient : MonoBehaviour
                 {
                     try
                     {
+                        // The JSON data is passed to the DashboardManager for processing (deserialization).
                         if (DashboardManager.Instance != null)
                         {
-                            // DashboardManager now safely handles cross-thread calls; we're on main thread here (coroutine).
                             DashboardManager.Instance.ReceivePrinterJson(json);
                         }
                         else
                         {
+                            // This error should be caught in StartPolling, but remains here as a fallback
                             Debug.LogError("PrinterPollingClient: DashboardManager.Instance is null. Ensure DashboardManager is present in the scene.");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogError("PrinterPollingClient: JSON/Delivery exception: " + ex);
+                        Debug.LogError("PrinterPollingClient: JSON/Delivery exception: " + ex + "\nRaw: " + json);
                     }
                 }
             }
@@ -201,20 +201,5 @@ public class PrinterPollingClient : MonoBehaviour
         if (baseUrl.EndsWith("/")) baseUrl = baseUrl.TrimEnd('/');
         if (!path.StartsWith("/")) path = "/" + path;
         return baseUrl + path;
-    }
-}
-
-/// <summary>
-/// Small extension to make starting IEnumerator inline easier (compat shim).
-/// This extension simply yields the passed IEnumerator (no extra behavior).
-/// </summary>
-public static class CoroutineExtensions
-{
-    public static IEnumerator WrapWithUnityCoroutine(this IEnumerator enumerator)
-    {
-        while (enumerator.MoveNext())
-        {
-            yield return enumerator.Current;
-        }
     }
 }
