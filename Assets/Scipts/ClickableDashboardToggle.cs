@@ -161,7 +161,7 @@ namespace Convai.Scripts.Runtime.Custom
             }
 
             // Optionally unbind the active panel if you want the UI cleared whenever closed:
-            // DashboardManager.Instance?.ClearActivePanel();
+            DashboardManager.Instance?.ClearActivePanel();
         }
 
         private bool IsDashboardShowingPrinter(string devId) // Parameter name changed for clarity

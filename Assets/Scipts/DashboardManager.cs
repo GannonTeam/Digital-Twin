@@ -95,43 +95,16 @@ public class DashboardManager : MonoBehaviour
         // --- SSE Connection Logic ---
         if (!string.IsNullOrEmpty(activePrinterId) && _sseClient != null)
         {
-            _sseClient.StartSseConnection(activePrinterId);
+            if (_sseClient.CurrentDevId != activePrinterId)
+            {
+                _sseClient.StartSseConnection(activePrinterId);
+            }
         }
         else if (string.IsNullOrEmpty(activePrinterId) && _sseClient != null)
         {
             _sseClient.StopSseConnection();
         }
         // --- End SSE Connection Logic ---
-
-        // --- Polling Client Logic ---
-        if (_pollingClient != null)
-        {
-            if (!string.IsNullOrEmpty(activePrinterId))
-            {
-                // If a specific printer is active, stop the general polling
-                _pollingClient.StopPolling();
-            }
-            else
-            {
-                // If no specific printer is active, resume general polling (if it was set to start on awake)
-                if (_pollingClient.startOnAwake)
-                {
-                    _pollingClient.StartPolling();
-                }
-            }
-        }
-        // --- End Polling Client Logic ---
-
-        // Optionally, attempt to fetch initial state from server if cache is absent
-        if (!string.IsNullOrEmpty(activePrinterId) && !latestStates.ContainsKey(activePrinterId))
-        {
-            // Use the stored _pollingClient reference
-            if (_pollingClient != null)
-            {
-                // OPTIMIZATION: Request the specific printer's data to ensure we get the latest detailed JSON.
-                _pollingClient.RequestSingle(activePrinterId); 
-            }
-        }
     }
     
     /// <summary>

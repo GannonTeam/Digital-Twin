@@ -21,6 +21,7 @@ public class SseClient : MonoBehaviour
     private HttpClient _httpClient;
     private CancellationTokenSource _cts;
     private string _currentDevId = string.Empty;
+    public string CurrentDevId => _currentDevId; // Added public getter
 
     // Event to notify subscribers about received DiffPatch data
     // The dictionary will contain the parsed fields as JToken values
@@ -78,14 +79,18 @@ public class SseClient : MonoBehaviour
     /// </summary>
     public void StopSseConnection()
     {
-        Debug.Log("SseClient: Attempting to unsubscribe from SSE.");
         if (_cts != null)
         {
+            Debug.Log($"SseClient: Attempting to unsubscribe from SSE for devId: {_currentDevId}.");
             _cts.Cancel();
             _cts.Dispose();
             _cts = null;
             _currentDevId = string.Empty;
-            Debug.Log("SseClient: SSE connection stopped.");
+            Debug.Log("SseClient: SSE connection stopped and unsubscribed.");
+        }
+        else
+        {
+            Debug.Log("SseClient: StopSseConnection called, but no active connection was found.");
         }
     }
 
@@ -126,7 +131,7 @@ public class SseClient : MonoBehaviour
                             if (line.StartsWith("data:"))
                             {
                                 string jsonData = line.Substring("data:".Length).Trim();
-                                // Debug.Log($"SseClient: Received data for {devId}: {jsonData}");
+                                Debug.Log($"SseClient: Received data for {devId}: {jsonData}");
                                 ProcessSseData(devId, jsonData);
                             }
                             // Heartbeat or comments
