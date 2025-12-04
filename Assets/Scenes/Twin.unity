@@ -2019,6 +2019,51 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 2032789792}
   m_SourcePrefab: {fileID: 100100000, guid: 653bc60b6c66db74fa1b147d2db2be05, type: 3}
+--- !u!1 &476234905
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 476234907}
+  - component: {fileID: 476234906}
+  m_Layer: 0
+  m_Name: SSEClient
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &476234906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 476234905}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 522d5eda97e8d5141903f8ec677157f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SseClient
+  bearerToken: 
+--- !u!4 &476234907
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 476234905}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 9.55598, y: 0.55594, z: 3.73471}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &476409546
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4613,7 +4658,7 @@ PrefabInstance:
       objectReference: {fileID: 1379878217}
     - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
       propertyPath: printerDevId
-      value: "01P00A440200612\t"
+      value: 01P00A440200612
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -5042,6 +5087,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PrinterPollingClient
   startOnAwake: 0
+  pollInterval: 30
   bearerToken: 
   extraHeader: 
 --- !u!4 &1130576616
@@ -6747,6 +6793,7 @@ GameObject:
   - component: {fileID: 1465352346}
   - component: {fileID: 1465352347}
   - component: {fileID: 1465352348}
+  - component: {fileID: 1465352349}
   m_Layer: 0
   m_Name: SceneManager
   m_TagString: Untagged
@@ -6962,6 +7009,18 @@ MonoBehaviour:
     Description: 
     gameObject: {fileID: 1222662332}
   DynamicMoveTargetIndicator: {fileID: 2096704895}
+--- !u!114 &1465352349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1465352343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b162b45e89a36d4ba0b404191517ebb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Convai.Scripts.Runtime.Utils.MainThreadDispatcher
 --- !u!1001 &1470631617
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8805,7 +8864,7 @@ PrefabInstance:
       objectReference: {fileID: 1379878217}
     - target: {fileID: 7805874844384929320, guid: f40380c18b0fc5e48b7358a9dc843763, type: 3}
       propertyPath: printerDevId
-      value: "01P00A433100716\t"
+      value: 01P00A433100716
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -10488,5 +10547,6 @@ SceneRoots:
   - {fileID: 1880660427}
   - {fileID: 865756320}
   - {fileID: 1130576616}
+  - {fileID: 476234907}
   - {fileID: 2001635752}
   - {fileID: 331325321}
