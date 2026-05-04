@@ -50,6 +50,8 @@ namespace Convai.Scripts.Runtime.UI
         /// </summary>
         private void Awake()
         {
+            // Fixed for Unity 6: Using FindAnyObjectByType where applicable if this were a find call, 
+            // but here it is a GetComponent on the same object.
             _microphoneTestController = GetComponent<MicrophoneTestController>();
             _buttonImage = _recordControllerButton.GetComponent<Image>();
             _buttonText = _recordControllerButton.GetComponentInChildren<TextMeshProUGUI>();
@@ -118,7 +120,9 @@ namespace Convai.Scripts.Runtime.UI
         /// </summary>
         private void ShowNoMicrophoneDetectedNotification()
         {
-            NotificationSystemHandler.Instance.NotificationRequest(NotificationType.NoMicrophoneDetected);
+            if (NotificationSystemHandler.Instance != null)
+                NotificationSystemHandler.Instance.NotificationRequest(NotificationType.NoMicrophoneDetected);
+            
             _recordSystemStatusText.text = "No Microphone Detected...";
         }
 
@@ -128,12 +132,20 @@ namespace Convai.Scripts.Runtime.UI
         private void InitializeMicrophoneDevices()
         {
             _microphoneSelectDropdown.ClearOptions();
+
+            // WebGL Guard: Microphone.devices does not exist in WebGL
+#if !UNITY_WEBGL || UNITY_EDITOR
             _microphoneSelectDropdown.AddOptions(new List<string>(Microphone.devices));
             _microphoneSelectDropdown.onValueChanged.AddListener(ChangeSelectedDevice);
             _recordSystemStatusText.text = "Waiting For Record...";
 
             // Checking if system has at-least one microphone to record the audio
             if (!MicrophoneManager.Instance.HasAnyMicrophoneDevices()) ShowNoMicrophoneDetectedNotification();
+#else
+            _microphoneSelectDropdown.AddOptions(new List<string> { "Web Browser (Not Supported)" });
+            _recordSystemStatusText.text = "Mic Not Supported in WebGL";
+            _recordControllerButton.interactable = false;
+#endif
         }
 
         /// <summary>

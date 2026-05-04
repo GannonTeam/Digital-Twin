@@ -1,0 +1,163 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &2932557297832813709
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.0231001
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.443
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -2.231
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      propertyPath: m_Name
+      value: Bambu_A1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2722444802740307683}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7353008328208633026}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4357512050886046125}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3904393600232280080}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9139174381271141955}
+  m_SourcePrefab: {fileID: 100100000, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+--- !u!1 &2626689860139801052 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 6333f9d8dbe898e428237c3ba0636947, type: 3}
+  m_PrefabInstance: {fileID: 2932557297832813709}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &2722444802740307683
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2626689860139801052}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: a3e659a73dd82974cafaf9299783f5ae, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7353008328208633026
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2626689860139801052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ddec7888132bab049948409971e151b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationManager
+--- !u!65 &4357512050886046125
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2626689860139801052}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.48, y: 0.4, z: 0.5}
+  m_Center: {x: -0.01, y: 0.22, z: 0}
+--- !u!114 &3904393600232280080
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2626689860139801052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee40d5e79bec9744c85d12df8b58346f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HighlightableObject
+  elementId: Bambu_A1_01
+--- !u!114 &9139174381271141955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2626689860139801052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34a1bd1918a1cce4bae309adf7b053e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Convai.Scripts.Runtime.Custom.ClickableDashboardToggle
+  dashboardUI: {fileID: 0}
+  clickAction: {fileID: 3001919216989983466, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  printerDevId: 03919D522600639
+  toggleWhenSame: 0

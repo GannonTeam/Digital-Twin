@@ -89,6 +89,8 @@ namespace Convai.Scripts.Runtime.Core
         private const float BUFFER_TIMEOUT = 1.5f; // 1500ms timeout
         private int _currentSampleRate;
 
+        // --- ADDED: New public event to signal the end of the NPC's conversational turn ---
+        public event Action<ConvaiNPC> OnNPCTurnFinished; 
         
         
 
@@ -558,6 +560,9 @@ namespace Convai.Scripts.Runtime.Core
                 convaiLipSync.ConvaiLipSyncApplicationBase.ClearQueue();
         }
 
+        /// <summary>
+        /// Sets the character talking state and signals the end of the NPC turn if talking stops.
+        /// </summary>
         public void SetCharacterTalking(bool isTalking)
         {
             if (IsCharacterTalking != isTalking)
@@ -565,6 +570,14 @@ namespace Convai.Scripts.Runtime.Core
                 ConvaiLogger.Info($"Character {characterName} is talking: {isTalking}", ConvaiLogger.LogCategory.Character);
                 IsCharacterTalking = isTalking;
                 OnCharacterTalking?.Invoke(IsCharacterTalking);
+
+                // --- MODIFIED: Fire the new event when the character stops talking ---
+                if (!isTalking)
+                {
+                    // The event fires when the NPC finishes speaking their response
+                    OnNPCTurnFinished?.Invoke(this); 
+                    Debug.Log($"NPC: {characterName} **FIRED** OnNPCTurnFinished."); // <-- ADD THIS
+                }
             }
         }
 

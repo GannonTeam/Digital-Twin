@@ -3,49 +3,37 @@ using UnityEngine.InputSystem;
 
 namespace Convai.Scripts.Runtime.Custom
 {
-    /// <summary>
-    /// Handles interaction via the New Input System. 
-    /// To be placed on the clickable object. Opens the assigned dashboard UI on click 
-    /// and provides a public method to close it.
-    /// </summary>
-    [RequireComponent(typeof(Collider))] // Still requires a collider for the hit check
+    [RequireComponent(typeof(Collider))]
     public class ClickableDashboardToggle : MonoBehaviour
     {
         [Header("UI Reference")]
-        [Tooltip("The Canvas or GameObject containing the dashboard UI to be opened/closed.")]
         [SerializeField] private GameObject dashboardUI;
 
         [Header("Input Action")]
-        [Tooltip("CRITICAL: Drag the specific 'Click' or 'Attack' Action asset reference here (e.g., Player/Attack).")]
         [SerializeField] private InputActionReference clickAction;
+
+        [Header("Printer mapping")]
+        [SerializeField] private string printerDevId = ""; 
+
+        [Header("Behavior")]
+        [SerializeField] private bool toggleWhenSame = false;
 
         private Camera _mainCamera;
 
         private void Awake()
         {
             _mainCamera = Camera.main;
-
-            if (_mainCamera == null)
-            {
-                Debug.LogError("ClickableDashboardToggle requires a main camera in the scene to determine hit position.");
-                enabled = false;
-            }
-
             if (dashboardUI == null)
             {
-                Debug.LogError($"ClickableDashboardToggle on {gameObject.name}: Dashboard UI GameObject is not assigned.");
+                Debug.LogError($"ClickableDashboardToggle on {gameObject.name}: dashboardUI is not assigned.");
                 enabled = false;
+                return;
             }
-            else
-            {
-                // Ensure the dashboard starts hidden
-                dashboardUI.SetActive(false);
-            }
+            dashboardUI.SetActive(false);
         }
 
         private void OnEnable()
         {
-            // Subscribe to the Input Action events.
             if (clickAction != null && clickAction.action != null)
             {
                 clickAction.action.performed += HandleClickPerformed;
@@ -55,7 +43,6 @@ namespace Convai.Scripts.Runtime.Custom
 
         private void OnDisable()
         {
-            // Unsubscribe and disable the Input Action.
             if (clickAction != null && clickAction.action != null)
             {
                 clickAction.action.performed -= HandleClickPerformed;
@@ -63,49 +50,83 @@ namespace Convai.Scripts.Runtime.Custom
             }
         }
 
-        /// <summary>
-        /// Called when the player performs the assigned click action (LMB).
-        /// </summary>
         private void HandleClickPerformed(InputAction.CallbackContext context)
         {
             if (_mainCamera == null) return;
-            
-            Ray ray = _mainCamera.ScreenPointToRay(Mouse.current.position.value);
-            RaycastHit hit;
 
-            // Perform raycast and check if the hit object is this one.
-            if (Physics.Raycast(ray, out hit) && hit.collider == GetComponent<Collider>())
+            var mousePos = Mouse.current.position.ReadValue();
+            var ray = _mainCamera.ScreenPointToRay(mousePos);
+            if (Physics.Raycast(ray, out var hit) && hit.collider == GetComponent<Collider>())
             {
-                // Only OPEN the dashboard on click, never close it here.
-                Debug.Log($"Opening Dashboard via click on {gameObject.name}");
-                OpenDashboard();
+                if (string.IsNullOrEmpty(printerDevId))
+                {
+                    OpenDashboard(null);
+                    return;
+                }
+
+                // CHECK: Is the dashboard active and showing this printer?
+                bool currentlyShowingThis = IsDashboardShowingPrinter(printerDevId); 
+
+                if (toggleWhenSame && currentlyShowingThis)
+                {
+                    CloseDashboard();
+                }
+                else
+                {
+                    OpenDashboard(printerDevId);
+                }
             }
         }
 
-        /// <summary>
-        /// Explicitly opens the dashboard UI.
-        /// </summary>
-        public void OpenDashboard()
+        public void OpenDashboard(string idToShow)
         {
-            if (dashboardUI != null && !dashboardUI.activeSelf)
+            if (dashboardUI == null) return;
+
+            if (!dashboardUI.activeSelf)
             {
                 dashboardUI.SetActive(true);
-                // Ensure the cursor is available for UI interaction when the dashboard is open.
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
+
+            var mgr = DashboardManager.Instance;
+            if (mgr != null)
+            {
+                // Passing the devId and this GameObject's name as the fallback
+                mgr.ShowPrinter(idToShow, this.gameObject.name);
+            }
         }
 
-        /// <summary>
-        /// Public method to explicitly close the dashboard UI. This should be called by a button.
-        /// </summary>
         public void CloseDashboard()
         {
-            if (dashboardUI != null && dashboardUI.activeSelf)
+            if (dashboardUI == null) return;
+
+            if (dashboardUI.activeSelf)
             {
                 dashboardUI.SetActive(false);
-                // Allow the player movement system (ConvaiPlayerMovement) to handle the cursor state for movement.
+                // Return cursor control if needed
             }
+
+            // FIX: Instead of ClearActivePanel(), we call ShowPrinter with empty values
+            DashboardManager.Instance?.ShowPrinter(string.Empty, null);
+        }
+
+        private bool IsDashboardShowingPrinter(string devId)
+        {
+            // If UI is off, it's not showing anything
+            if (!dashboardUI.activeSelf) return false;
+
+            var mgr = DashboardManager.Instance;
+            if (mgr == null || mgr.activePanel == null) return false;
+
+            // Check the activePanel's CurrentPrinterId directly
+            return mgr.activePanel.CurrentPrinterId == devId;
+        }
+
+        public string PrinterDevId
+        {
+            get => printerDevId;
+            set => printerDevId = value;
         }
     }
 }

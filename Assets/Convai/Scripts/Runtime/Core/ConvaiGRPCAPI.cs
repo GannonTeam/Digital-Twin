@@ -53,7 +53,8 @@ namespace Convai.Scripts.Runtime.Core
             ConvaiAPIKeySetup.GetAPIKey(out _apiKey);
 
             // Find and store a reference to the ConvaiChatUIHandler component in the scene.
-            _chatUIHandler = FindObjectOfType<ConvaiChatUIHandler>();
+            // Fixed for Unity 6: Using FindAnyObjectByType to avoid Obsolete warnings
+            _chatUIHandler = FindAnyObjectByType<ConvaiChatUIHandler>();
         }
 
         private void Start()
@@ -315,6 +316,8 @@ namespace Convai.Scripts.Runtime.Core
                 return; // early return on error
             }
 
+            // WebGL Guard: Microphone API is not present in WebGL builds
+#if !UNITY_WEBGL || UNITY_EDITOR
             AudioClip audioClip = Microphone.Start(MicrophoneManager.Instance.SelectedMicrophoneName, false, recordingLength, recordingFrequency);
 
             MicrophoneTestController.Instance.CheckMicrophoneDeviceWorkingStatus(audioClip);
@@ -323,6 +326,10 @@ namespace Convai.Scripts.Runtime.Core
             OnPlayerSpeakingChanged?.Invoke(true);
 
             await ProcessAudioContinuously(call, recordingFrequency, recordingLength, audioClip);
+#else
+            ConvaiLogger.Warn("Microphone.Start is not supported in WebGL. Skipping capture.", ConvaiLogger.LogCategory.Character);
+            await call.RequestStream.CompleteAsync();
+#endif
         }
 
         private AsyncDuplexStreamingCall<GetResponseRequest, GetResponseResponse> GetAsyncDuplexStreamingCallOptions(ConvaiService.ConvaiServiceClient client)
@@ -403,6 +410,7 @@ namespace Convai.Scripts.Runtime.Core
             // Run the receiving results from the server in the background without awaiting it here.
             Task receiveResultsTask = Task.Run(async () => { await ReceiveResultFromServer(call, _cancellationTokenSource.Token); }, _cancellationTokenSource.Token);
 
+#if !UNITY_WEBGL || UNITY_EDITOR
             int pos = 0;
             float[] audioData = new float[recordingFrequency * recordingLength];
 
@@ -447,6 +455,7 @@ namespace Convai.Scripts.Runtime.Core
             await ProcessAudioChunk(call,
                 Microphone.GetPosition(MicrophoneManager.Instance.SelectedMicrophoneName) - pos,
                 audioData).ConfigureAwait(false);
+#endif
 
             await call.RequestStream.CompleteAsync();
         }
@@ -457,7 +466,9 @@ namespace Convai.Scripts.Runtime.Core
         public void StopRecordAudio()
         {
             // End microphone recording
+#if !UNITY_WEBGL || UNITY_EDITOR
             Microphone.End(MicrophoneManager.Instance.SelectedMicrophoneName);
+#endif
             _usageLimitNotificationSent = false;
 
             try
@@ -751,9 +762,8 @@ namespace Convai.Scripts.Runtime.Core
 
         /// <summary>
         /// </summary>
-        /// <param name="result"></param>
-        /// <param name="npc"></param>
-        private void TriggerNarrativeSection(GetResponseResponse result, ConvaiNPC npc)
+        /// <param name="newActiveNPC"></param>
+        public void TriggerNarrativeSection(GetResponseResponse result, ConvaiNPC npc)
         {
             ConvaiNPC convaiNPC = NPCToSendResponse(npc);
             // Trigger the current section of the narrative design manager in the active NPC

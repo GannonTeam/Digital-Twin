@@ -1,98 +1,154 @@
-using UnityEngine;
 using System.Collections.Generic;
+using System.Threading;
+using UnityEngine;
+using Newtonsoft.Json.Linq;
+using System.Linq;
 
-// Attach this script to a single GameObject, like your Canvas or a Scene Manager.
 public class DashboardManager : MonoBehaviour
 {
-    [Tooltip("Drag the GameObject with the SignalRConnector script here.")]
-    public SignalRConnector connector; 
+    public static DashboardManager Instance { get; private set; }
 
-    // Dictionary to hold all 40 UI Handlers, keyed by their unique PrinterId for fast lookup.
-    private Dictionary<string, PrinterUIHandler> printerPanelUIs = new Dictionary<string, PrinterUIHandler>();
+    private readonly Dictionary<string, PrinterState> latestStates = new Dictionary<string, PrinterState>();
+
+    [Tooltip("Assign the single UI panel used to show any printer.")]
+    public PrinterUIHandler activePanel;
+
+    private string activePrinterId = string.Empty;
+    private static SynchronizationContext unitySyncContext;
+    private SseClient _sseClient;
+    private PrinterPollingClient _pollingClient;
 
     void Awake()
     {
-        // Safety check to automatically find the connector if it wasn't assigned in the Inspector.
-        if (connector == null)
+        if (Instance != null && Instance != this)
         {
-            connector = FindObjectOfType<SignalRConnector>();
+            Destroy(this.gameObject);
+            return;
         }
+        Instance = this;
+        DontDestroyOnLoad(this.gameObject);
+
+        unitySyncContext = SynchronizationContext.Current ?? new SynchronizationContext();
+
+        _sseClient = FindObjectOfType<SseClient>();
+        if (_sseClient != null)
+            _sseClient.OnDiffPatchReceived += ReceiveDiffPatch;
         
-        if (connector == null)
+        _pollingClient = FindObjectOfType<PrinterPollingClient>();
+
+        if (activePanel != null) activePanel.SetPrinterId(string.Empty);
+    }
+
+    public void ShowPrinter(string printerId, string gameObjectName)
+    {
+        activePrinterId = printerId ?? string.Empty;
+        string fallbackName = gameObjectName ?? string.Empty;
+
+        if (SynchronizationContext.Current == unitySyncContext)
+            BindActivePanelAndApplyState(fallbackName);
+        else
+            unitySyncContext.Post(_ => BindActivePanelAndApplyState(fallbackName), null);
+
+        // --- SSE Connection Logic ---
+        if (!string.IsNullOrEmpty(activePrinterId) && _sseClient != null)
         {
-            Debug.LogError("DashboardManager requires a SignalRConnector to be present in the scene.");
-            enabled = false; // Disable script if dependency is missing
+            _sseClient.StartSseConnection(activePrinterId);
+            
+            // Force an immediate poll so the UI isn't stuck on "Loading" 
+            // while waiting for the first SSE change.
+            if (_pollingClient != null)
+            {
+                _pollingClient.RequestSingle(activePrinterId);
+            }
+        }
+        else if (string.IsNullOrEmpty(activePrinterId) && _sseClient != null)
+        {
+            _sseClient.StopSseConnection();
+        }
+    }
+
+    public void ShowPrinter(string printerId) => ShowPrinter(printerId, null);
+
+    public void ReceiveDiffPatch(string devId, Dictionary<string, JToken> diffPatchFields)
+    {
+        if (string.IsNullOrEmpty(devId) || diffPatchFields == null) return;
+
+        unitySyncContext.Post(_ =>
+        {
+            // Use your specific class names here: MetaData() instead of Meta()
+            if (!latestStates.TryGetValue(devId, out PrinterState existingState))
+            {
+                existingState = new PrinterState 
+                { 
+                    devId = devId, 
+                    reported = new ReportedState(), 
+                    meta = new MetaData() 
+                };
+                latestStates[devId] = existingState;
+            }
+
+            ApplyDiffPatchToState(existingState, diffPatchFields);
+            
+            // Update the UI
+            if (devId == activePrinterId && activePanel != null)
+            {
+                activePanel.ApplyPartialUpdate(devId, diffPatchFields);
+            }
+        }, null);
+    }
+
+    private void ApplyDiffPatchToState(PrinterState targetState, Dictionary<string, JToken> diffPatchFields)
+    {
+        foreach (var entry in diffPatchFields)
+        {
+            string key = entry.Key;
+            JToken value = entry.Value;
+
+            // Handle both "reported.state" and just "state" depending on how backend serializes the Diff
+            if (key.Contains("state")) targetState.reported.state = value.ToString();
+            else if (key.Contains("progressPct")) targetState.reported.progressPct = value.ToObject<double>();
+            else if (key.Contains("nozzleC")) targetState.reported.nozzleC = value.ToObject<double>();
+            else if (key.Contains("bedC")) targetState.reported.bedC = value.ToObject<double>();
+            else if (key.Contains("name")) targetState.meta.name = value.ToString();
+        }
+    }
+
+    public void ReceivePrinterStates(PrinterState[] states)
+    {
+        if (states == null) return;
+        foreach (var s in states)
+        {
+            if (s == null || string.IsNullOrEmpty(s.devId)) continue;
+            latestStates[s.devId] = s;
+
+            if (s.devId == activePrinterId && activePanel != null)
+            {
+                activePanel.DisplayState(s);
+            }
+        }
+    }
+
+    private void BindActivePanelAndApplyState(string fallbackName)
+    {
+        if (activePanel == null) return;
+
+        if (string.IsNullOrEmpty(activePrinterId))
+        {
+            activePanel.SetPrinterId(string.Empty, fallbackName, null); 
             return;
         }
 
-        // 1. Initialize the UI handlers dictionary. 
-        // We find all PrinterUIHandler components that are children of this GameObject.
-        MapPrinterUIs();
-
-        // 2. Subscribe to the event *before* Start() so we don't miss any data
-        connector.OnPrinterDataReceived += HandleIncomingPrinterData;
-    }
-
-    void Start()
-    {
-        // ConnectAsync is called in SignalRConnector.Start(), and RequestInitialState() 
-        // is called automatically after a successful connection.
-    }
-
-    /// <summary>
-    /// Finds all PrinterUIHandler components in the scene's children and maps them
-    /// to the dictionary using their assigned PrinterId.
-    /// </summary>
-    private void MapPrinterUIs()
-    {
-        // Get all handlers attached to your individual panels (children of this manager)
-        PrinterUIHandler[] allPanels = GetComponentsInChildren<PrinterUIHandler>(true);
-        int mappedCount = 0;
-        
-        foreach(var panel in allPanels)
-        {
-            if (!string.IsNullOrEmpty(panel.PrinterId))
-            {
-                if (!printerPanelUIs.ContainsKey(panel.PrinterId))
-                {
-                    printerPanelUIs.Add(panel.PrinterId, panel);
-                    mappedCount++;
-                }
-                else
-                {
-                    Debug.LogError($"Duplicate Printer ID found: {panel.PrinterId}. Check your UI panels.");
-                }
-            }
-        }
-        Debug.Log($"Dashboard Manager initialized. Mapped {mappedCount} printer UI panels.");
-    }
-
-    /// <summary>
-    /// Handler for the SignalRConnector's event. This runs safely on the main thread.
-    /// </summary>
-    /// <param name="data">The latest PrinterData.</param>
-    private void HandleIncomingPrinterData(PrinterData data)
-    {
-        // 1. Look up the correct UI panel using the PrinterId
-        if (printerPanelUIs.TryGetValue(data.PrinterId, out PrinterUIHandler uiComponent))
-        {
-            // 2. Pass the data to the UI handler for visual updates
-            uiComponent.DisplayData(data);
-        }
-        else
-        {
-            // This is expected if an initial data burst comes in before all UIs are mapped,
-            // or if the backend sends data for an unknown printer.
-            Debug.LogWarning($"Data received for unmapped Printer ID: {data.PrinterId}.");
-        }
+        latestStates.TryGetValue(activePrinterId, out var cached);
+        activePanel.SetPrinterId(activePrinterId, fallbackName, cached);
     }
 
     void OnDestroy()
     {
-        // ALWAYS unsubscribe to prevent memory leaks!
-        if (connector != null)
+        if (Instance == this) Instance = null;
+        if (_sseClient != null)
         {
-            connector.OnPrinterDataReceived -= HandleIncomingPrinterData;
+            _sseClient.OnDiffPatchReceived -= ReceiveDiffPatch;
+            _sseClient.StopSseConnection();
         }
     }
 }

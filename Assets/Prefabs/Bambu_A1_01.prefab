@@ -1,0 +1,140 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &1792531596038280460
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 5.413
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.443
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 3.153
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 068961bfce865b048bbf04a48e349e9b, type: 2}
+    - target: {fileID: 919132149155446097, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      propertyPath: m_Name
+      value: Bambu_A1_01
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3977411176628901284}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2299006058527467290}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8989878803669647981}
+  m_SourcePrefab: {fileID: 100100000, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+--- !u!1 &1450493523253766237 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: cceca812c4eb3314ca2ee6108b2e21a3, type: 3}
+  m_PrefabInstance: {fileID: 1792531596038280460}
+  m_PrefabAsset: {fileID: 0}
+--- !u!65 &3977411176628901284
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1450493523253766237}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0073904204, y: 0.0060959994, z: 0.006391951}
+  m_Center: {x: 0.000020090027, y: 0.0030479997, z: 0.00000040500896}
+--- !u!114 &2299006058527467290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1450493523253766237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee40d5e79bec9744c85d12df8b58346f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HighlightableObject
+  elementId: Bambu_A1_01
+--- !u!114 &8989878803669647981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1450493523253766237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34a1bd1918a1cce4bae309adf7b053e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Convai.Scripts.Runtime.Custom.ClickableDashboardToggle
+  dashboardUI: {fileID: 0}
+  clickAction: {fileID: 3001919216989983466, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  printerId: Bambu_A1_01
+  toggleWhenSame: 0
+  requestSingleOnShow: 1
