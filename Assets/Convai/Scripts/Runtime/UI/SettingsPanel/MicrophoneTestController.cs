@@ -125,6 +125,9 @@ namespace Convai.Scripts.Runtime.UI
             if (_uiMicrophoneSettings.GetMicrophoneSelectDropdown().options.Count > 0)
             {
                 _selectedDevice = MicrophoneManager.Instance.SelectedMicrophoneName;
+
+                // WebGL Guard: Microphone Start
+#if !UNITY_WEBGL || UNITY_EDITOR
                 AudioClip recordedClip = Microphone.Start(_selectedDevice, false, MAX_RECORD_TIME, FREQUENCY);
                 _audioSource.clip = recordedClip;
                 CheckMicrophoneDeviceWorkingStatus(recordedClip);
@@ -133,6 +136,9 @@ namespace Convai.Scripts.Runtime.UI
                 _isRecording = true;
 
                 _recordTimeCounterCoroutine = StartCoroutine(RecordTimeCounter());
+#else
+                ConvaiLogger.Warn("Microphone Test is disabled in WebGL build.", ConvaiLogger.LogCategory.UI);
+#endif
             }
             else
             {
@@ -145,6 +151,8 @@ namespace Convai.Scripts.Runtime.UI
         /// </summary>
         private void StopMicrophoneTestRecording()
         {
+            // WebGL Guard: Microphone Check and Stop logic
+#if !UNITY_WEBGL || UNITY_EDITOR
             if (Microphone.IsRecording(_selectedDevice))
             {
                 StopCoroutine(_recordTimeCounterCoroutine);
@@ -161,6 +169,9 @@ namespace Convai.Scripts.Runtime.UI
 
                 StartCoroutine(AudioClipTimeCounter(_audioSource.clip.length));
             }
+#else
+            _isRecording = false;
+#endif
         }
 
         /// <summary>

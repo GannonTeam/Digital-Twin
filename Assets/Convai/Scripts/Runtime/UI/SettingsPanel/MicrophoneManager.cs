@@ -39,8 +39,13 @@ namespace Convai.Scripts.Runtime.UI
         {
             get
             {
+                // WebGL Guard: Return empty string if on WebGL, otherwise check Microphone.devices
+#if !UNITY_WEBGL || UNITY_EDITOR
                 if (_selectedMicrophoneIndex < 0 || _selectedMicrophoneIndex >= Microphone.devices.Length) return string.Empty;
                 return Microphone.devices[_selectedMicrophoneIndex];
+#else
+                return string.Empty;
+#endif
             }
         }
 
@@ -65,7 +70,12 @@ namespace Convai.Scripts.Runtime.UI
         /// <returns></returns>
         public bool HasAnyMicrophoneDevices()
         {
+            // WebGL Guard: Return false for WebGL builds, otherwise check hardware
+#if !UNITY_WEBGL || UNITY_EDITOR
             return Microphone.devices.Length != 0;
+#else
+            return false;
+#endif
         }
     }
 }

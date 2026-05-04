@@ -1,14 +1,5 @@
 {
   "dependencies": {
-    "com.cavrnus.spatialconnector": {
-      "version": "3.1.7",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.nuget.newtonsoft-json": "3.2.1"
-      },
-      "url": "https://packages.cavrn.us"
-    },
     "com.soupday.cc3_unity_tools": {
       "version": "https://github.com/soupday/cc_unity_tools_URP.git",
       "depth": 0,
